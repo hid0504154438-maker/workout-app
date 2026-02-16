@@ -13,7 +13,7 @@ export default function ClientHome({ weeks: initialWeeks, userSlug, passcode }) 
     const weeks = useMemo(() => [...initialWeeks].reverse(), [initialWeeks]);
 
     useEffect(() => {
-        logEvent(userSlug, 'page_view', 'Client Home');
+        // logEvent(userSlug, 'page_view', 'Client Home');
     }, [userSlug]);
 
     // Helper: Parse date range "DD.MM - DD.MM"
