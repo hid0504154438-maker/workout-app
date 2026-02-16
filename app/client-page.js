@@ -4,6 +4,7 @@ import { useState, useMemo } from 'react';
 import WeekTabs from '../components/WeekTabs';
 import DayView from '../components/DayView';
 import ProgressBar from '../components/ProgressBar';
+import AuthGate from '../components/AuthGate';
 
 export default function ClientHome({ weeks, userSlug, passcode }) {
     const [activeWeek, setActiveWeek] = useState(0);
