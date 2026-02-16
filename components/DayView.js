@@ -10,9 +10,10 @@ const extractVideoLink = (text) => {
     return match ? match[0] : null;
 };
 
-export default function DayView({ day, weekIndex, dayIndex, isOpen, onToggle, userSlug }) {
+export default function DayView({ day, weekIndex, dayIndex, isOpen, onToggle, userSlug, getHistory }) {
     const [exercises, setExercises] = useState(day.exercises);
     const [savingState, setSavingState] = useState({});
+    const [historyOpen, setHistoryOpen] = useState(null); // Index of exercise with open history
     const timeoutRefs = useRef({});
 
     useEffect(() => {
@@ -107,6 +108,16 @@ export default function DayView({ day, weekIndex, dayIndex, isOpen, onToggle, us
                                     <div className="exercise-title">
                                         {ex.type && <span className="tag-type">{ex.type}</span>}
                                         <strong>{ex.name || '---'}</strong>
+
+                                        {/* History Toggle */}
+                                        {getHistory && getHistory(ex.name).length > 0 && (
+                                            <button
+                                                className="history-btn"
+                                                onClick={() => setHistoryOpen(historyOpen === exIndex ? null : exIndex)}
+                                            >
+                                                📈
+                                            </button>
+                                        )}
                                     </div>
                                     {videoLink && (
                                         <a href={videoLink} target="_blank" rel="noopener noreferrer" className="video-btn">
@@ -114,6 +125,23 @@ export default function DayView({ day, weekIndex, dayIndex, isOpen, onToggle, us
                                         </a>
                                     )}
                                 </div>
+
+                                {/* History Modal / Expansion */}
+                                {historyOpen === exIndex && (
+                                    <div className="history-panel">
+                                        <h4>היסטוריית ביצועים</h4>
+                                        <div className="history-list">
+                                            {getHistory(ex.name).map((h, i) => (
+                                                <div key={i} className="history-row">
+                                                    <span className="h-date">שבוע {h.week}</span>
+                                                    <span className="h-stats">
+                                                        {h.weight}kg x {h.reps} ({h.sets} sets)
+                                                    </span>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
 
                                 <div className="exercise-info">
                                     <div className="plan-metric">
@@ -323,6 +351,32 @@ export default function DayView({ day, weekIndex, dayIndex, isOpen, onToggle, us
         }
         .status-dot.success { background: #22c55e; }
         .status-dot.saving { background: #eab308; }
+
+        .history-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 1.2rem;
+            padding: 5px;
+            margin-right: 5px;
+        }
+        .history-panel {
+            background: #111;
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            border: 1px solid #444;
+        }
+        .history-panel h4 { margin: 0 0 10px 0; font-size: 0.9rem; color: #888; }
+        .history-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 5px 0;
+            border-bottom: 1px solid #222;
+            font-size: 0.9rem;
+        }
+        .history-row:last-child { border: none; }
+        .h-stats { color: var(--accent); font-weight: bold; direction: ltr; }
       `}</style>
         </div>
     );

@@ -7,10 +7,63 @@ import ProgressBar from '../components/ProgressBar';
 import AuthGate from '../components/AuthGate';
 
 export default function ClientHome({ weeks, userSlug, passcode }) {
-    const [activeWeek, setActiveWeek] = useState(0);
-    const [openDay, setOpenDay] = useState(0); // Index of open day in current week
+    // Helper: Parse date range "DD.MM - DD.MM"
+    const isWeekActive = (dateRange) => {
+        if (!dateRange) return false;
+        try {
+            const [startStr, endStr] = dateRange.split('-').map(s => s.trim());
+            const [sDay, sMonth] = startStr.split('.').map(Number);
+            const [eDay, eMonth] = endStr.split('.').map(Number);
+
+            const now = new Date();
+            const currentYear = now.getFullYear();
+
+            const start = new Date(currentYear, sMonth - 1, sDay);
+            const end = new Date(currentYear, eMonth - 1, eDay);
+            end.setHours(23, 59, 59); // End of day
+
+            // Handle year wrap (e.g. Dec to Jan) logic if needed, but for now simple
+            return now >= start && now <= end;
+        } catch (e) {
+            return false;
+        }
+    };
+
+    // Determine initial active week
+    const initialWeek = useMemo(() => {
+        const foundIndex = weeks.findIndex(w => isWeekActive(w.dateRange));
+        return foundIndex !== -1 ? foundIndex : 0;
+    }, [weeks]);
+
+    const [activeWeek, setActiveWeek] = useState(initialWeek);
+    const [openDay, setOpenDay] = useState(0);
 
     const currentWeek = weeks[activeWeek];
+
+    // Get history for a specific exercise
+    const getExerciseHistory = (exerciseName) => {
+        if (!exerciseName) return [];
+        const history = [];
+        weeks.forEach((week, wIndex) => {
+            // Don't show future weeks
+            if (wIndex > activeWeek) return;
+
+            week.days.forEach(day => {
+                const exercise = day.exercises.find(ex => ex.name === exerciseName);
+                if (exercise && exercise.actualWeight && exercise.actualReps) {
+                    history.push({
+                        week: wIndex + 1,
+                        date: week.dateRange || `Week ${wIndex + 1}`,
+                        weight: exercise.actualWeight,
+                        reps: exercise.actualReps,
+                        sets: exercise.actualSets,
+                        score: (parseFloat(exercise.actualWeight) || 0) * (parseFloat(exercise.actualReps) || 0) * (parseFloat(exercise.actualSets) || 1)
+                    });
+                }
+            });
+        });
+        return history.sort((a, b) => b.week - a.week); // Newest first
+    };
 
     // Calculate Weekly Progress
     const weekStats = useMemo(() => {
@@ -71,6 +124,7 @@ export default function ClientHome({ weeks, userSlug, passcode }) {
                                 isOpen={openDay === dIndex}
                                 onToggle={() => setOpenDay(openDay === dIndex ? -1 : dIndex)}
                                 userSlug={userSlug}
+                                getHistory={getExerciseHistory}
                             />
                         ))}
 
