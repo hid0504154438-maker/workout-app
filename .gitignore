@@ -1,0 +1,8 @@
+node_modules/
+.next/
+.env.local
+.env
+service_account.json
+vercel_key.txt
+debug_output.json
+debug_porat.json
