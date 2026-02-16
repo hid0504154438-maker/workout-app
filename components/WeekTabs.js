@@ -10,7 +10,7 @@ export default function WeekTabs({ weeks, activeWeek, onSelect, orientation = 'v
                         className={`week-tab ${activeWeek === index ? 'active' : ''}`}
                         onClick={() => onSelect(index)}
                     >
-                        <span className="week-number">שבוע {index + 1}</span>
+                        <span className="week-number">{week.name || `Week ${weeks.length - index}`}</span>
                         {/* Hide date range in vertical mode to save space */}
                         {orientation === 'horizontal' && <span className="week-date">{week.dateRange}</span>}
                     </button>

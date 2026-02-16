@@ -41,7 +41,7 @@ export default function ClientHome({ weeks: initialWeeks, userSlug, passcode }) 
     }, [weeks]);
 
     const [activeWeek, setActiveWeek] = useState(initialWeek);
-    const [openDay, setOpenDay] = useState(0);
+    const [openDay, setOpenDay] = useState(-1);
 
     const currentWeek = weeks[activeWeek];
 
