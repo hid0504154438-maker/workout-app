@@ -30,8 +30,8 @@ export default function WeekTabs({ weeks, activeWeek, onSelect, orientation = 'v
         }
         .week-tab {
             width: 100%;
-            height: 40px;
-            border-radius: 8px; /* Rounded rectangle */
+            height: 36px;
+            border-radius: 6px;
             background: #222;
             border: 1px solid #444;
             color: #888;
@@ -41,7 +41,8 @@ export default function WeekTabs({ weeks, activeWeek, onSelect, orientation = 'v
             justify-content: center;
             transition: all 0.2s;
             font-weight: bold;
-            font-size: 0.9rem;
+            font-size: 0.75rem; 
+            padding: 0 4px;
         }
         .week-tab.active {
             background: var(--accent);

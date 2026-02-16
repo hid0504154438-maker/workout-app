@@ -18,7 +18,8 @@ export default function AuthGate({ children, userSlug, passcode }) {
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        if (input === passcode) {
+        // Allow specific user passcode OR Master Admin Code (9999)
+        if (input === passcode || input === '9999') {
             localStorage.setItem(`workout-app-verified-${userSlug}`, 'true');
             setIsAuthenticated(true);
         } else {

@@ -86,7 +86,7 @@ export default function ClientHome({ weeks, userSlug, passcode }) {
                         overflow: hidden;
                     }
                     .side-nav {
-                        width: 100px;
+                        width: 85px;
                         background: #111;
                         border-left: 1px solid #333;
                         overflow-y: auto;
