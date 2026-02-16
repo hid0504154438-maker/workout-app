@@ -6,7 +6,10 @@ import DayView from '../components/DayView';
 import ProgressBar from '../components/ProgressBar';
 import AuthGate from '../components/AuthGate';
 
-export default function ClientHome({ weeks, userSlug, passcode }) {
+export default function ClientHome({ weeks: initialWeeks, userSlug, passcode }) {
+    // Reverse weeks so the latest is first (User Request)
+    const weeks = useMemo(() => [...initialWeeks].reverse(), [initialWeeks]);
+
     // Helper: Parse date range "DD.MM - DD.MM"
     const isWeekActive = (dateRange) => {
         if (!dateRange) return false;
@@ -22,7 +25,7 @@ export default function ClientHome({ weeks, userSlug, passcode }) {
             const end = new Date(currentYear, eMonth - 1, eDay);
             end.setHours(23, 59, 59); // End of day
 
-            // Handle year wrap (e.g. Dec to Jan) logic if needed, but for now simple
+            // Handle year wrap if needed
             return now >= start && now <= end;
         } catch (e) {
             return false;
@@ -32,6 +35,8 @@ export default function ClientHome({ weeks, userSlug, passcode }) {
     // Determine initial active week
     const initialWeek = useMemo(() => {
         const foundIndex = weeks.findIndex(w => isWeekActive(w.dateRange));
+        // If current date match found, use it. obtain index in REVERSED array.
+        // If not found, default to 0 (which is now the LATEST week because we reversed it).
         return foundIndex !== -1 ? foundIndex : 0;
     }, [weeks]);
 
