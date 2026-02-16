@@ -133,6 +133,15 @@ export default function ClientHome({ weeks: initialWeeks, userSlug, passcode }) 
                         <div className="greeting">
                             <h1>My Progress</h1>
                             <span className="subtitle">Let's crush it! 🔥</span>
+
+                            <a
+                                href="https://calendar.google.com/calendar/render?action=TEMPLATE&text=אימון והשקעה בעצמי :)&details=זמן לתת עבודה!&sf=true&output=xml"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="calendar-btn"
+                            >
+                                📅 שריון אימון ביומן
+                            </a>
                         </div>
 
                         <div className="card progress-card">
@@ -202,6 +211,22 @@ export default function ClientHome({ weeks: initialWeeks, userSlug, passcode }) 
                         padding: 10px;
                         background: #222;
                         border-radius: 8px;
+                    }
+                    .calendar-btn {
+                        display: inline-block;
+                        margin-top: 10px;
+                        padding: 8px 12px;
+                        background: rgba(255,255,255,0.1);
+                        border: 1px solid #444;
+                        border-radius: 8px;
+                        color: #fff;
+                        text-decoration: none;
+                        font-size: 0.9rem;
+                        transition: background 0.2s;
+                    }
+                    .calendar-btn:hover {
+                        background: rgba(255,255,255,0.2);
+                        border-color: #fff;
                     }
                 `}</style>
             </main>
