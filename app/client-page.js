@@ -6,8 +6,6 @@ import DayView from '../components/DayView';
 import ProgressBar from '../components/ProgressBar';
 import AuthGate from '../components/AuthGate';
 
-import { logEvent } from '../lib/analytics';
-
 export default function ClientHome({ weeks: initialWeeks, userSlug, passcode }) {
     // Reverse weeks so the latest is first (User Request)
     const weeks = useMemo(() => [...initialWeeks].reverse(), [initialWeeks]);
@@ -128,7 +126,6 @@ export default function ClientHome({ weeks: initialWeeks, userSlug, passcode }) 
                         onSelect={(index) => {
                             setActiveWeek(index);
                             setOpenDay(0);
-                            logEvent(userSlug, 'click', `Select Week ${weeks[index]?.name || index}`);
                         }}
                         orientation="vertical"
                     />
@@ -146,7 +143,6 @@ export default function ClientHome({ weeks: initialWeeks, userSlug, passcode }) 
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 className="calendar-btn"
-                                onClick={() => logEvent(userSlug, 'click', 'Add to Calendar')}
                             >
                                 📅 שריון אימון ביומן
                             </a>

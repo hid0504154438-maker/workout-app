@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { logEvent } from '../lib/analytics';
 
 // Helper to find links in text
 const extractVideoLink = (text) => {
@@ -118,15 +117,6 @@ export default function DayView({ day, weekIndex, dayIndex, isOpen, onToggle, us
                                                     onClick={() => {
                                                         const isOpen = historyOpen === exIndex;
                                                         setHistoryOpen(isOpen ? null : exIndex);
-                                                        if (!isOpen && typeof window !== 'undefined') {
-                                                            // Simple client-side logging without import if easier, or pass logger?
-                                                            // DayView doesn't have logEvent imported. Let's pass it or fetch directly? 
-                                                            // Helper is in lib/analytics. Let's import it.
-                                                            // But DayView is used in ClientHome, so we can pass it as prop?
-                                                            // Or just import it here.
-                                                            // Let's rely on the import I'll add.
-                                                            logEvent(userSlug, 'click', 'Open History', { exercise: ex.name });
-                                                        }
                                                     }}
                                                 >
                                                     📈
