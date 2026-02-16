@@ -10,9 +10,6 @@ export default function ClientHome({ weeks: initialWeeks, userSlug, passcode }) 
     // Reverse weeks so the latest is first (User Request)
     const weeks = useMemo(() => [...initialWeeks].reverse(), [initialWeeks]);
 
-    useEffect(() => {
-        // logEvent(userSlug, 'page_view', 'Client Home');
-    }, [userSlug]);
 
     // Helper: Parse date range "DD.MM - DD.MM"
     const isWeekActive = (dateRange) => {
