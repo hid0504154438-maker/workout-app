@@ -17,6 +17,7 @@ export const metadata = {
   description: "Track your progress",
   manifest: "/manifest.json",
   themeColor: "#0a0a0a",
+  // PWA & Mobile Optimization
   viewport: {
     width: "device-width",
     initialScale: 1,
