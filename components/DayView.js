@@ -140,9 +140,11 @@ export default function DayView({ day, weekIndex, dayIndex, isOpen, onToggle, us
                                         return (
                                             <div key={field} className="input-wrapper">
                                                 <input
-                                                    type="tel" // optimized for numbers
+                                                    type="text"
+                                                    inputMode="decimal" // Better number keyboard on iOS/Android
+                                                    pattern="[0-9]*"
                                                     value={ex[field] || ''}
-                                                    placeholder={labels[field]} // use label as placeholder to save space
+                                                    placeholder={labels[field]}
                                                     onChange={(e) => handleInputChange(exIndex, field, e.target.value)}
                                                     className={status === 'saved' ? 'saved' : ''}
                                                 />
