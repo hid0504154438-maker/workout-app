@@ -245,16 +245,17 @@ export default function DayView({ day, weekIndex, dayIndex, isOpen, onToggle, us
             vertical-align: middle;
         }
         .video-btn {
-            font-size: 1.4rem; /* Larger icon */
+            font-size: 1.4rem;
             text-decoration: none;
-            background: #222;
-            width: 44px; /* Larger touch target */
+            background: rgba(255, 0, 0, 0.15); /* Red tint for YouTube */
+            width: 44px;
             height: 44px;
             display: flex;
             align-items: center;
             justify-content: center;
-            border-radius: 50%;
-            border: 1px solid #444;
+            border-radius: 12px; /* Rounded square instead of circle */
+            border: 1px solid rgba(255, 0, 0, 0.3);
+            color: #f00;
         }
 
         .exercise-info {
