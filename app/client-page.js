@@ -46,28 +46,53 @@ export default function ClientHome({ weeks: initialWeeks, userSlug, passcode }) 
     const currentWeek = weeks[activeWeek];
 
     // Get history for a specific exercise
+    // Get history for a specific exercise
     const getExerciseHistory = (exerciseName) => {
         if (!exerciseName) return [];
         const history = [];
         weeks.forEach((week, wIndex) => {
-            // Don't show future weeks
-            if (wIndex > activeWeek) return;
+            // Since weeks are REVERSED (Newest = Index 0), past weeks have HIGHER indices.
+            // We want to show history relevant to the *currently viewed* week (activeWeek).
+            // So we include weeks where wIndex >= activeWeek.
+            if (wIndex < activeWeek) return; // Skip "future" weeks relative to the viewed week
 
             week.days.forEach(day => {
                 const exercise = day.exercises.find(ex => ex.name === exerciseName);
                 if (exercise && exercise.actualWeight && exercise.actualReps) {
                     history.push({
-                        week: wIndex + 1,
-                        date: week.dateRange || `Week ${wIndex + 1}`,
+                        week: week.name || `Week ${weeks.length - wIndex}`, // Calculate real week number if needed
+                        date: week.dateRange,
                         weight: exercise.actualWeight,
                         reps: exercise.actualReps,
                         sets: exercise.actualSets,
-                        score: (parseFloat(exercise.actualWeight) || 0) * (parseFloat(exercise.actualReps) || 0) * (parseFloat(exercise.actualSets) || 1)
+                        volume: (parseFloat(exercise.actualWeight) || 0) * (parseFloat(exercise.actualReps) || 0) * (parseFloat(exercise.actualSets) || 1)
                     });
                 }
             });
         });
-        return history.sort((a, b) => b.week - a.week); // Newest first
+        return history; // Already in Newest -> Oldest order roughly, or sort by week ID? 
+        // weeks array is Newest (Index 0) -> Oldest. So iteration produces Newest -> Oldest.
+    };
+
+    const getTrend = (exerciseName) => {
+        const history = getExerciseHistory(exerciseName);
+        if (history.length < 2) return null;
+
+        const current = history[0];
+        const previous = history[1];
+
+        const wCur = parseFloat(current.weight) || 0;
+        const wPrev = parseFloat(previous.weight) || 0;
+        const rCur = parseFloat(current.reps) || 0;
+        const rPrev = parseFloat(previous.reps) || 0;
+
+        if (wCur > wPrev) return { dir: 'up', text: 'מגמת עלייה (משקל)' };
+        if (wCur < wPrev) return { dir: 'down', text: 'ירידה במשקל' };
+
+        if (rCur > rPrev) return { dir: 'up', text: 'מגמת עלייה (חזרות)' };
+        if (rCur < rPrev) return { dir: 'down', text: 'ירידה בחזרות' };
+
+        return { dir: 'same', text: 'ללא שינוי' };
     };
 
     // Calculate Weekly Progress
@@ -130,6 +155,7 @@ export default function ClientHome({ weeks: initialWeeks, userSlug, passcode }) 
                                 onToggle={() => setOpenDay(openDay === dIndex ? -1 : dIndex)}
                                 userSlug={userSlug}
                                 getHistory={getExerciseHistory}
+                                getTrend={getTrend}
                             />
                         ))}
 

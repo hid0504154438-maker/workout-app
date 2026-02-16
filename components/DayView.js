@@ -10,7 +10,7 @@ const extractVideoLink = (text) => {
     return match ? match[0] : null;
 };
 
-export default function DayView({ day, weekIndex, dayIndex, isOpen, onToggle, userSlug, getHistory }) {
+export default function DayView({ day, weekIndex, dayIndex, isOpen, onToggle, userSlug, getHistory, getTrend }) {
     const [exercises, setExercises] = useState(day.exercises);
     const [savingState, setSavingState] = useState({});
     const [historyOpen, setHistoryOpen] = useState(null); // Index of exercise with open history
@@ -111,12 +111,25 @@ export default function DayView({ day, weekIndex, dayIndex, isOpen, onToggle, us
 
                                         {/* History Toggle */}
                                         {getHistory && getHistory(ex.name).length > 0 && (
-                                            <button
-                                                className="history-btn"
-                                                onClick={() => setHistoryOpen(historyOpen === exIndex ? null : exIndex)}
-                                            >
-                                                📈
-                                            </button>
+                                            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
+                                                <button
+                                                    className="history-btn"
+                                                    onClick={() => setHistoryOpen(historyOpen === exIndex ? null : exIndex)}
+                                                >
+                                                    📈
+                                                </button>
+                                                {getTrend && (() => {
+                                                    const trend = getTrend(ex.name);
+                                                    if (!trend) return null;
+                                                    const color = trend.dir === 'up' ? '#22c55e' : trend.dir === 'down' ? '#ef4444' : '#888';
+                                                    const arrow = trend.dir === 'up' ? '▲' : trend.dir === 'down' ? '▼' : '➖';
+                                                    return (
+                                                        <span style={{ fontSize: '0.75rem', color, fontWeight: 'bold' }}>
+                                                            {arrow} {trend.text}
+                                                        </span>
+                                                    );
+                                                })()}
+                                            </div>
                                         )}
                                     </div>
                                     {videoLink && (
@@ -357,7 +370,7 @@ export default function DayView({ day, weekIndex, dayIndex, isOpen, onToggle, us
             border: none;
             cursor: pointer;
             font-size: 1.2rem;
-            padding: 5px;
+            padding: 0;
             margin-right: 5px;
         }
         .history-panel {

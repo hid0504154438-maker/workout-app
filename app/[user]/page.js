@@ -24,6 +24,7 @@ export default async function TraineePage({ params }) {
     try {
         const rawData = await getSheetData(trainee.spreadsheetId, range);
         weeks = processSheetData(rawData);
+        console.log('Parsed Weeks for user:', user, JSON.stringify(weeks.map(w => ({ name: w.name, date: w.dateRange })), null, 2));
     } catch (err) {
         console.error(err);
         return <div className="container">Error loading data for {trainee.name}: {err.message}</div>
