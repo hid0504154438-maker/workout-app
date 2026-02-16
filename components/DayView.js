@@ -72,10 +72,25 @@ export default function DayView({ day, weekIndex, dayIndex, isOpen, onToggle, us
         }, 1000);
     };
 
+    const completedCount = exercises.filter(ex => ex.actualSets && ex.actualSets.trim() !== '').length;
+    const totalCount = exercises.length;
+    const progressPercent = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
+    const isDayComplete = totalCount > 0 && completedCount === totalCount;
+
     return (
-        <div className="day-card">
+        <div className={`day-card ${isDayComplete ? 'complete-day' : ''}`}>
             <button className={`day-header ${isOpen ? 'open' : ''}`} onClick={onToggle}>
-                <h3>{day.name}</h3>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <h3>{day.name}</h3>
+                    {totalCount > 0 && (
+                        <span className="mini-progress">
+                            {completedCount}/{totalCount}
+                            <div className="mini-bar-track">
+                                <div className="mini-bar-fill" style={{ width: `${progressPercent}%` }}></div>
+                            </div>
+                        </span>
+                    )}
+                </div>
                 <span className="arrow">{isOpen ? '▲' : '▼'}</span>
             </button>
 
@@ -84,9 +99,10 @@ export default function DayView({ day, weekIndex, dayIndex, isOpen, onToggle, us
                     {exercises.map((ex, exIndex) => {
                         const videoLink = extractVideoLink(ex.notes);
                         const notesWithoutLink = ex.notes ? ex.notes.replace(videoLink, '').trim() : '';
+                        const isExerciseDone = ex.actualSets && ex.actualSets.trim() !== '';
 
                         return (
-                            <div key={exIndex} className="exercise-item">
+                            <div key={exIndex} className={`exercise-item ${isExerciseDone ? 'done' : ''}`}>
                                 <div className="exercise-top">
                                     <div className="exercise-title">
                                         {ex.type && <span className="tag-type">{ex.type}</span>}
@@ -146,32 +162,70 @@ export default function DayView({ day, weekIndex, dayIndex, isOpen, onToggle, us
         .day-card {
             background: var(--card-bg);
             border-radius: 12px;
-            margin-bottom: 10px;
+            margin-bottom: 12px;
             border: 1px solid #333;
             overflow: hidden;
+            transition: border-color 0.3s ease;
+        }
+        .day-card.complete-day {
+            border-color: var(--accent);
+            box-shadow: 0 0 10px rgba(0, 255, 157, 0.1);
         }
         .day-header {
             width: 100%;
             background: none;
             border: none;
             color: #fff;
-            padding: 1rem;
+            padding: 1.2rem; /* Larger touch area */
             display: flex;
             justify-content: space-between;
             align-items: center;
             cursor: pointer;
             text-align: right;
         }
-        .day-header h3 { margin: 0; font-size: 1.1rem; }
-        .arrow { color: var(--accent); }
+        .day-header h3 { margin: 0; font-size: 1.2rem; }
+        .arrow { color: var(--accent); font-size: 1.2rem; }
         
+        .mini-progress {
+            font-size: 0.8rem;
+            color: #888;
+            background: rgba(255,255,255,0.05);
+            padding: 4px 8px;
+            border-radius: 12px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-width: 50px;
+        }
+        .mini-bar-track {
+            width: 100%;
+            height: 3px;
+            background: #444;
+            margin-top: 3px;
+            border-radius: 2px;
+        }
+        .mini-bar-fill {
+            height: 100%;
+            background: var(--accent);
+            border-radius: 2px;
+            transition: width 0.3s ease;
+        }
+
         .exercises-list {
             padding: 0 1rem 1rem 1rem;
             border-top: 1px solid #333;
         }
         .exercise-item {
-            padding: 1rem 0;
+            padding: 1.2rem 0; /* More spacing */
             border-bottom: 1px solid #2a2a2a;
+            transition: background 0.3s;
+        }
+        .exercise-item.done {
+            /* Optional: subtle highlight for done exercises */
+            background: linear-gradient(to left, rgba(0, 255, 157, 0.03), transparent);
+            border-right: 2px solid var(--accent);
+            padding-right: 10px;
+            margin-right: -10px; /* Compensate padding */
         }
         .exercise-item:last-child { border-bottom: none; }
 
@@ -179,23 +233,23 @@ export default function DayView({ day, weekIndex, dayIndex, isOpen, onToggle, us
             display: flex;
             justify-content: space-between;
             align-items: flex-start;
-            margin-bottom: 8px;
+            margin-bottom: 12px;
         }
         .tag-type {
             font-size: 0.7em;
             background: #333;
-            padding: 2px 6px;
-            border-radius: 4px;
-            margin-left: 6px;
+            padding: 3px 8px;
+            border-radius: 6px;
+            margin-left: 8px;
             color: var(--accent-secondary);
             vertical-align: middle;
         }
         .video-btn {
-            font-size: 1.2rem;
+            font-size: 1.4rem; /* Larger icon */
             text-decoration: none;
             background: #222;
-            width: 36px;
-            height: 36px;
+            width: 44px; /* Larger touch target */
+            height: 44px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -205,33 +259,34 @@ export default function DayView({ day, weekIndex, dayIndex, isOpen, onToggle, us
 
         .exercise-info {
             display: flex;
-            gap: 15px;
-            margin-bottom: 10px;
+            gap: 20px;
+            margin-bottom: 15px;
             background: #222;
-            padding: 8px;
+            padding: 10px;
             border-radius: 8px;
         }
         .plan-metric {
             display: flex;
             flex-direction: column;
         }
-        .plan-metric .label { font-size: 0.65em; color: #888; }
-        .plan-metric .value { font-size: 0.9em; font-weight: bold; }
+        .plan-metric .label { font-size: 0.7em; color: #888; margin-bottom: 2px; }
+        .plan-metric .value { font-size: 1rem; font-weight: bold; }
 
         .notes-text {
-            font-size: 0.85em;
+            font-size: 0.9em;
             color: #aaa;
-            margin-bottom: 10px;
+            margin-bottom: 15px;
             background: #222;
-            padding: 6px;
-            border-radius: 4px;
-            border-right: 2px solid var(--accent);
+            padding: 10px;
+            border-radius: 6px;
+            border-right: 3px solid var(--accent);
+            line-height: 1.4;
         }
 
         .inputs-row {
             display: grid;
             grid-template-columns: 1fr 1fr 1fr;
-            gap: 10px;
+            gap: 12px;
         }
         .input-wrapper {
             position: relative;
@@ -241,10 +296,10 @@ export default function DayView({ day, weekIndex, dayIndex, isOpen, onToggle, us
             background: #111;
             border: 1px solid #444;
             color: #fff;
-            padding: 12px 5px;
-            border-radius: 8px;
+            padding: 14px 5px; /* Taller input */
+            border-radius: 10px;
             text-align: center;
-            font-size: 1rem; 
+            font-size: 16px; /* Prevents iOS zoom */
         }
         .input-wrapper input:focus {
             outline: none;
@@ -253,13 +308,14 @@ export default function DayView({ day, weekIndex, dayIndex, isOpen, onToggle, us
         }
         .input-wrapper input.saved {
             border-color: #22c55e;
+            background: rgba(34, 197, 94, 0.1);
         }
         .status-dot {
             position: absolute;
-            top: 6px;
-            left: 6px;
-            width: 6px;
-            height: 6px;
+            top: 8px;
+            left: 8px;
+            width: 8px;
+            height: 8px;
             border-radius: 50%;
         }
         .status-dot.success { background: #22c55e; }
