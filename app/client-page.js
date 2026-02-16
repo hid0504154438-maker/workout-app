@@ -29,72 +29,96 @@ export default function ClientHome({ weeks, userSlug }) {
     }, [currentWeek]);
 
     return (
-        <main style={{ paddingBottom: '50px' }}>
-            {/* Dashboard Header */}
-            <div className="container dashboard-header">
-                <div className="greeting">
-                    <span className="subtitle">Let's crush it! 🔥</span>
-                    <h1>My Progress</h1>
-                </div>
-
-                <div className="card progress-card">
-                    <ProgressBar
-                        total={weekStats.total}
-                        completed={weekStats.completed}
-                        label={`שבוע ${activeWeek + 1} - ${weekStats.completed}/${weekStats.total} תרגילים`}
+        <AuthGate userSlug={userSlug} passcode={passcode}>
+            <main className="main-layout">
+                <div className="side-nav">
+                    <WeekTabs
+                        weeks={weeks}
+                        activeWeek={activeWeek}
+                        onSelect={(index) => {
+                            setActiveWeek(index);
+                            setOpenDay(0);
+                        }}
+                        orientation="vertical"
                     />
                 </div>
-            </div>
 
-            <WeekTabs
-                weeks={weeks}
-                activeWeek={activeWeek}
-                onSelect={(index) => {
-                    setActiveWeek(index);
-                    setOpenDay(0); // Reset day on week change
-                }}
-            />
+                <div className="content-area">
+                    {/* Dashboard Header */}
+                    <div className="dashboard-header">
+                        <div className="greeting">
+                            <h1>My Progress</h1>
+                            <span className="subtitle">Let's crush it! 🔥</span>
+                        </div>
 
-            <div className="container" style={{ marginTop: '1rem' }}>
-                {currentWeek && currentWeek.days.map((day, dIndex) => (
-                    <DayView
-                        key={`${activeWeek}-${dIndex}`}
-                        day={day}
-                        weekIndex={activeWeek}
-                        dayIndex={dIndex}
-                        isOpen={openDay === dIndex}
-                        onToggle={() => setOpenDay(openDay === dIndex ? -1 : dIndex)}
-                        userSlug={userSlug}
-                    />
-                ))}
+                        <div className="card progress-card">
+                            <ProgressBar
+                                total={weekStats.total}
+                                completed={weekStats.completed}
+                                label={`שבוע ${activeWeek + 1}`}
+                            />
+                        </div>
+                    </div>
 
-                {!currentWeek && <div style={{ textAlign: 'center', padding: '2rem' }}>No workouts found.</div>}
-            </div>
+                    <div className="days-container">
+                        {currentWeek && currentWeek.days.map((day, dIndex) => (
+                            <DayView
+                                key={`${activeWeek}-${dIndex}`}
+                                day={day}
+                                weekIndex={activeWeek}
+                                dayIndex={dIndex}
+                                isOpen={openDay === dIndex}
+                                onToggle={() => setOpenDay(openDay === dIndex ? -1 : dIndex)}
+                                userSlug={userSlug}
+                            />
+                        ))}
 
-            <style jsx>{`
-                .dashboard-header {
-                    padding-top: 1.5rem;
-                    padding-bottom: 0.5rem;
-                }
-                .greeting h1 {
-                    font-size: 2rem;
-                    margin: 0;
-                    background: linear-gradient(to right, #fff, #bbb);
-                    -webkit-background-clip: text;
-                    -webkit-text-fill-color: transparent;
-                }
-                .subtitle {
-                    color: var(--accent);
-                    font-size: 0.9rem;
-                    text-transform: uppercase;
-                    letter-spacing: 1px;
-                }
-                .progress-card {
-                    background: linear-gradient(145deg, #1a1a1a, #222);
-                    border: 1px solid #333;
-                    margin-top: 15px;
-                }
-            `}</style>
-        </main>
+                        {!currentWeek && <div style={{ textAlign: 'center', padding: '2rem' }}>No workouts found.</div>}
+                    </div>
+                </div>
+
+                <style jsx>{`
+                    .main-layout {
+                        display: flex;
+                        flex-direction: row; /* RTL by default due to global CSS */
+                        height: 100vh;
+                        overflow: hidden;
+                    }
+                    .side-nav {
+                        width: 70px;
+                        background: #111;
+                        border-left: 1px solid #333;
+                        overflow-y: auto;
+                        flex-shrink: 0;
+                    }
+                    .content-area {
+                        flex-grow: 1;
+                        overflow-y: auto;
+                        padding: 15px;
+                        padding-bottom: 80px;
+                    }
+                    .dashboard-header {
+                        margin-bottom: 20px;
+                    }
+                    .greeting h1 {
+                        font-size: 1.5rem;
+                        margin: 0 0 5px 0;
+                    }
+                    .subtitle {
+                        color: var(--accent);
+                        font-size: 0.9rem;
+                        text-transform: uppercase;
+                        letter-spacing: 1px;
+                        display: block;
+                        margin-bottom: 10px;
+                    }
+                    .progress-card {
+                        padding: 10px;
+                        background: #222;
+                        border-radius: 8px;
+                    }
+                `}</style>
+            </main>
+        </AuthGate>
     );
 }
