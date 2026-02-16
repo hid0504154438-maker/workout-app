@@ -5,7 +5,7 @@ import WeekTabs from '../components/WeekTabs';
 import DayView from '../components/DayView';
 import ProgressBar from '../components/ProgressBar';
 
-export default function ClientHome({ weeks, userSlug }) {
+export default function ClientHome({ weeks, userSlug, passcode }) {
     const [activeWeek, setActiveWeek] = useState(0);
     const [openDay, setOpenDay] = useState(0); // Index of open day in current week
 
