@@ -10,7 +10,7 @@ export default function WeekTabs({ weeks, activeWeek, onSelect, orientation = 'v
                         className={`week-tab ${activeWeek === index ? 'active' : ''}`}
                         onClick={() => onSelect(index)}
                     >
-                        <span className="week-number">{index + 1}</span>
+                        <span className="week-number">שבוע {index + 1}</span>
                         {/* Hide date range in vertical mode to save space */}
                         {orientation === 'horizontal' && <span className="week-date">{week.dateRange}</span>}
                     </button>
@@ -29,9 +29,9 @@ export default function WeekTabs({ weeks, activeWeek, onSelect, orientation = 'v
             align-items: center;
         }
         .week-tab {
-            width: 40px;
+            width: 100%;
             height: 40px;
-            border-radius: 50%; /* Circle shape */
+            border-radius: 8px; /* Rounded rectangle */
             background: #222;
             border: 1px solid #444;
             color: #888;
@@ -41,15 +41,16 @@ export default function WeekTabs({ weeks, activeWeek, onSelect, orientation = 'v
             justify-content: center;
             transition: all 0.2s;
             font-weight: bold;
+            font-size: 0.9rem;
         }
         .week-tab.active {
             background: var(--accent);
             color: #000;
             border-color: var(--accent);
-            transform: scale(1.1);
+            transform: scale(1.05);
         }
         .week-number {
-            font-size: 1.1rem;
+            font-size: 0.9rem;
         }
       `}</style>
         </div>
