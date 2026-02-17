@@ -20,7 +20,7 @@ export default function TraineeCard({ slug, name }) {
                         latestWeek.days.forEach(day => {
                             day.exercises.forEach(ex => {
                                 total++;
-                                if (ex.actualSets && ex.actualSets.trim()) completed++;
+                                if (ex.actualSets && String(ex.actualSets).trim().length > 0) completed++;
                             });
                         });
                     }

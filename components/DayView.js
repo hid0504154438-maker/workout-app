@@ -221,6 +221,18 @@ export default function DayView({ day, isOpen, onToggle, userSlug, getHistory, g
                                         <span className="label">משקל יעד</span>
                                         <span className="value">{ex.weight || '-'}</span>
                                     </div>
+                                    {ex.rest && (
+                                        <div className="plan-metric">
+                                            <span className="label">מנוחה</span>
+                                            <span className="value">{ex.rest}</span>
+                                        </div>
+                                    )}
+                                    {ex.rpe && (
+                                        <div className="plan-metric">
+                                            <span className="label">RPE</span>
+                                            <span className="value">{ex.rpe}</span>
+                                        </div>
+                                    )}
                                 </div>
 
                                 {notesWithoutLink && <div className="notes-text">{notesWithoutLink}</div>}
