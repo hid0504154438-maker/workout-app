@@ -8,7 +8,7 @@ import AuthGate from '../components/AuthGate';
 import WeeklySummary from '../components/WeeklySummary';
 import { triggerFireworks } from '../components/Confetti';
 
-export default function ClientHome({ weeks: initialWeeks, userSlug, passcode }) {
+export default function ClientHome({ weeks: initialWeeks, userSlug }) {
     // Reverse weeks so the latest is first (User Request)
     // Reverse weeks so the latest is first, with safety check
     const weeks = useMemo(() => Array.isArray(initialWeeks) ? [...initialWeeks].reverse() : [], [initialWeeks]);
@@ -138,7 +138,7 @@ export default function ClientHome({ weeks: initialWeeks, userSlug, passcode }) 
     }, [weekStats, activeWeek, userSlug]);
 
     return (
-        <AuthGate userSlug={userSlug} passcode={passcode}>
+        <AuthGate userSlug={userSlug}>
             <main className="main-layout">
                 {showSummary && (
                     <WeeklySummary

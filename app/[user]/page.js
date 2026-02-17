@@ -41,7 +41,7 @@ export default async function TraineePage({ params }) {
             }}>
                 מחובר כ: {trainee.name}
             </div>
-            <ClientHome weeks={weeks} userSlug={user} passcode={trainee.passcode} />
+            <ClientHome weeks={weeks} userSlug={user} />
         </div>
     );
 }

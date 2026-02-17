@@ -1,7 +1,7 @@
 'use client';
 import { useState, useEffect } from 'react';
 
-export default function AuthGate({ children, userSlug, passcode }) {
+export default function AuthGate({ children, userSlug }) {
     const [isAuthenticated, setIsAuthenticated] = useState(false);
     const [input, setInput] = useState('');
     const [error, setError] = useState(false);
@@ -18,18 +18,33 @@ export default function AuthGate({ children, userSlug, passcode }) {
         setLoading(false);
     }, [userSlug]);
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        // Allow specific user passcode OR Master Admin Code (9999)
-        if (input === passcode || input === '9999') {
-            if (typeof window !== 'undefined') {
-                localStorage.setItem(`workout-app-verified-${userSlug}`, 'true');
+        setLoading(true);
+
+        try {
+            const res = await fetch('/api/auth/verify', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ userSlug, passcode: input })
+            });
+
+            const data = await res.json();
+
+            if (data.success) {
+                if (typeof window !== 'undefined') {
+                    localStorage.setItem(`workout-app-verified-${userSlug}`, 'true');
+                }
+                setIsAuthenticated(true);
+            } else {
+                throw new Error('Invalid passcode');
             }
-            setIsAuthenticated(true);
-        } else {
+        } catch (err) {
             setError(true);
             setInput('');
             setTimeout(() => setError(false), 2000);
+        } finally {
+            setLoading(false);
         }
     };
 
