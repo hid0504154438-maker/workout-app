@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
-import { getSheetData } from '../../lib/googleSheets';
-import { processSheetData } from '../../lib/parser';
-import { trainees } from '../../lib/trainees';
+import { getSheetData } from '@/lib/googleSheets';
+import { processSheetData } from '@/lib/parser';
+import { trainees } from '@/lib/trainees';
 
 export const dynamic = 'force-dynamic';
 
