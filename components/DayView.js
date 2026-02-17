@@ -212,6 +212,10 @@ export default function DayView({ day, isOpen, onToggle, userSlug, getHistory, g
                                         const manualLink = videoLink;
                                         const mappedId = getVideoId(ex.name);
 
+                                        // Check for custom search term in notes: [Search: Front Squat]
+                                        const customSearchMatch = ex.notes && ex.notes.match(/\[Search:\s*(.*?)\]/i);
+                                        const searchTerm = customSearchMatch ? customSearchMatch[1] : ex.name;
+
                                         if (manualLink) {
                                             return (
                                                 <a href={manualLink} target="_blank" rel="noopener noreferrer" className="video-btn">
@@ -233,7 +237,7 @@ export default function DayView({ day, isOpen, onToggle, userSlug, getHistory, g
 
                                         return (
                                             <a
-                                                href={getSearchUrl(ex.name)}
+                                                href={getSearchUrl(searchTerm)}
                                                 target="_blank"
                                                 rel="noopener noreferrer"
                                                 className="video-btn search-btn"
