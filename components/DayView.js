@@ -89,10 +89,64 @@ export default function DayView({ day, isOpen, onToggle, userSlug, getHistory, g
         }, 1000);
     };
 
-    const completedCount = exercises.filter(ex => ex.actualSets && ex.actualSets.trim() !== '').length;
-    const totalCount = exercises.length;
+    const completedCount = exercises.filter(ex => ex.actualSets && String(ex.actualSets).trim().length > 0).length;
+    const totalCount = exercises.filter(ex => ex.sets && String(ex.sets).trim().length > 0).length;
     const progressPercent = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
     const isDayComplete = totalCount > 0 && completedCount === totalCount;
+
+    // 80% Celebration Logic
+    useEffect(() => {
+        if (progressPercent >= 80) {
+            const key = `celebrated-80-${day.name}-${userSlug}-${new Date().toLocaleDateString()}`;
+            const alreadyCelebrated = localStorage.getItem(key);
+
+            if (!alreadyCelebrated) {
+                import('./Confetti').then(mod => mod.triggerFireworks());
+
+                // Show toast (simple implementation)
+                const toast = document.createElement('div');
+                toast.innerText = 'התקדמת עוד צעד לחיים בריאים והמטרה שלך! 💪';
+                Object.assign(toast.style, {
+                    position: 'fixed',
+                    top: '20px',
+                    left: '50%',
+                    transform: 'translateX(-50%)',
+                    background: 'rgba(34, 197, 94, 0.9)',
+                    color: 'white',
+                    padding: '16px 24px',
+                    borderRadius: '12px',
+                    zIndex: '10000',
+                    fontSize: '1.2rem',
+                    fontWeight: 'bold',
+                    boxShadow: '0 10px 30px rgba(0,0,0,0.5)',
+                    backdropFilter: 'blur(10px)',
+                    animation: 'slideInToast 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275)'
+                });
+
+                // Add keyframes style if not exists
+                if (!document.getElementById('toast-style')) {
+                    const style = document.createElement('style');
+                    style.id = 'toast-style';
+                    style.innerHTML = `
+                        @keyframes slideInToast {
+                            from { transform: translate(-50%, -100%); opacity: 0; }
+                            to { transform: translate(-50%, 0); opacity: 1; }
+                        }
+                    `;
+                    document.head.appendChild(style);
+                }
+
+                document.body.appendChild(toast);
+                localStorage.setItem(key, 'true');
+
+                setTimeout(() => {
+                    toast.style.transition = 'opacity 0.5s';
+                    toast.style.opacity = '0';
+                    setTimeout(() => toast.remove(), 500);
+                }, 4000);
+            }
+        }
+    }, [progressPercent, day.name, userSlug]);
 
     return (
         <div className={`day-card ${isDayComplete ? 'complete-day' : ''}`}>
