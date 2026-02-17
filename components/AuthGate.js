@@ -9,9 +9,11 @@ export default function AuthGate({ children, userSlug, passcode }) {
 
     useEffect(() => {
         // Check if already verified
-        const verified = localStorage.getItem(`workout-app-verified-${userSlug}`);
-        if (verified === 'true') {
-            setIsAuthenticated(true);
+        if (typeof window !== 'undefined') {
+            const verified = localStorage.getItem(`workout-app-verified-${userSlug}`);
+            if (verified === 'true') {
+                setIsAuthenticated(true);
+            }
         }
         setLoading(false);
     }, [userSlug]);
@@ -20,7 +22,9 @@ export default function AuthGate({ children, userSlug, passcode }) {
         e.preventDefault();
         // Allow specific user passcode OR Master Admin Code (9999)
         if (input === passcode || input === '9999') {
-            localStorage.setItem(`workout-app-verified-${userSlug}`, 'true');
+            if (typeof window !== 'undefined') {
+                localStorage.setItem(`workout-app-verified-${userSlug}`, 'true');
+            }
             setIsAuthenticated(true);
         } else {
             setError(true);

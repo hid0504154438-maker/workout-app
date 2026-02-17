@@ -15,9 +15,11 @@ export default function ClientHome({ weeks: initialWeeks, userSlug, passcode }) 
 
     // Helper: Parse date range "DD.MM - DD.MM"
     const isWeekActive = (dateRange) => {
-        if (!dateRange) return false;
+        if (!dateRange || typeof dateRange !== 'string') return false;
         try {
-            const [startStr, endStr] = dateRange.split('-').map(s => s.trim());
+            const parts = dateRange.split('-');
+            if (parts.length !== 2) return false;
+            const [startStr, endStr] = parts.map(s => s.trim());
             const [sDay, sMonth] = startStr.split('.').map(Number);
             const [eDay, eMonth] = endStr.split('.').map(Number);
 
