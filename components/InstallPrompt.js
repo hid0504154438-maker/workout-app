@@ -62,13 +62,13 @@ export default function InstallPrompt() {
 
             {isIOS ? (
                 <div className="ios-instructions">
-                    <span>לחץ על <span className="share-icon">⎋</span> ואז <strong>"הוסף למסך הבית"</strong></span>
+                    <span>לחץ על <span className="share-icon">⎋</span> ואז <strong>&quot;הוסף למסך הבית&quot;</strong></span>
                     <button className="close-btn" onClick={() => setIsVisible(false)}>סגור</button>
                 </div>
             ) : (
                 <div className="actions">
                     <button className="install-btn" onClick={handleInstallClick}>התקן</button>
-                    <button className="close-btn" onClick={() => setIsVisible(false)}>אולי אח"כ</button>
+                    <button className="close-btn" onClick={() => setIsVisible(false)}>אולי אח&quot;כ</button>
                 </div>
             )}
 

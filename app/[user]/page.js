@@ -13,7 +13,7 @@ export default async function TraineePage({ params }) {
         return (
             <div className="container" style={{ textAlign: 'center', marginTop: '50px' }}>
                 <h1>User Not Found</h1>
-                <p>The trainee "{user}" does not exist in the system.</p>
+                <p>The trainee &quot;{user}&quot; does not exist in the system.</p>
             </div>
         );
     }
