@@ -5,6 +5,7 @@ import WeekTabs from '../components/WeekTabs';
 import DayView from '../components/DayView';
 import ProgressBar from '../components/ProgressBar';
 import AuthGate from '../components/AuthGate';
+import WeeklySummary from '../components/WeeklySummary';
 import { triggerFireworks } from '../components/Confetti';
 
 export default function ClientHome({ weeks: initialWeeks, userSlug, passcode }) {
@@ -120,13 +121,18 @@ export default function ClientHome({ weeks: initialWeeks, userSlug, passcode }) 
         return { total, completed };
     }, [currentWeek]);
 
+    const [showSummary, setShowSummary] = useState(false);
+
     useEffect(() => {
         if (weekStats.total > 0 && weekStats.completed === weekStats.total) {
-            const key = `celebrated-week-${activeWeek}-${userSlug}`;
+            const key = `celebrated-week-summary-${activeWeek}-${userSlug}`;
             const hasCelebrated = localStorage.getItem(key);
             if (!hasCelebrated) {
-                triggerFireworks();
-                localStorage.setItem(key, 'true');
+                // Delay slightly to let the last checkmark animation finish
+                setTimeout(() => {
+                    setShowSummary(true);
+                    localStorage.setItem(key, 'true');
+                }, 1000);
             }
         }
     }, [weekStats, activeWeek, userSlug]);
@@ -134,6 +140,13 @@ export default function ClientHome({ weeks: initialWeeks, userSlug, passcode }) 
     return (
         <AuthGate userSlug={userSlug} passcode={passcode}>
             <main className="main-layout">
+                {showSummary && (
+                    <WeeklySummary
+                        week={currentWeek}
+                        stats={weekStats}
+                        onClose={() => setShowSummary(false)}
+                    />
+                )}
                 <div className="side-nav">
                     <WeekTabs
                         weeks={weeks}
