@@ -12,215 +12,249 @@ const extractVideoLink = (text) => {
     return match ? match[0] : null;
 };
 
-export default function DayView({ day, weekIndex, dayIndex, isOpen, onToggle, userSlug, getHistory, getTrend }) {
-    const [exercises, setExercises] = useState(day.exercises);
-    const [savingState, setSavingState] = useState({});
-    const [historyOpen, setHistoryOpen] = useState(null); // Index of exercise with open history
-    const [activeVideo, setActiveVideo] = useState(null); // Video ID for modal
-    const timeoutRefs = useRef({});
+// Fallback to YouTube Search if no ID found
+const getSearchUrl = (term) => `https://www.youtube.com/results?search_query=${encodeURIComponent(term + ' exercise tutorial')}`;
+const [exercises, setExercises] = useState(day.exercises);
+const [savingState, setSavingState] = useState({});
+const [historyOpen, setHistoryOpen] = useState(null); // Index of exercise with open history
+const [activeVideo, setActiveVideo] = useState(null); // Video ID for modal
+const timeoutRefs = useRef({});
 
-    useEffect(() => {
-        setExercises(day.exercises);
-    }, [day.exercises]);
+useEffect(() => {
+    setExercises(day.exercises);
+}, [day.exercises]);
 
-    // ... (updateCell function remains same) ...
-    // Since we are replacing a large chunk via `replace_file_content`, 
-    // I will try to target specific blocks to minimize disruption if possible, 
-    // OR just replace the top imports and state, and insert the modal at the bottom return.
+// ... (updateCell function remains same) ...
+// Since we are replacing a large chunk via `replace_file_content`, 
+// I will try to target specific blocks to minimize disruption if possible, 
+// OR just replace the top imports and state, and insert the modal at the bottom return.
 
-    // Instead of replacing the whole file, I will modify the imports and state first.
-    // Wait, the tool only allows ONE contiguous block or MULTIPLE non-aligned.
-    // I'll update the component piece by piece.
+// Instead of replacing the whole file, I will modify the imports and state first.
+// Wait, the tool only allows ONE contiguous block or MULTIPLE non-aligned.
+// I'll update the component piece by piece.
 
-    useEffect(() => {
-        setExercises(day.exercises);
-    }, [day.exercises]);
+useEffect(() => {
+    setExercises(day.exercises);
+}, [day.exercises]);
 
-    const updateCell = async (rowIndex, field, value) => {
-        const key = `${rowIndex}-${field}`;
-        setSavingState(prev => ({ ...prev, [key]: 'saving' }));
+const updateCell = async (rowIndex, field, value) => {
+    const key = `${rowIndex}-${field}`;
+    setSavingState(prev => ({ ...prev, [key]: 'saving' }));
 
-        try {
-            const res = await fetch('/api/update', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    userSlug, // Identifies who is updating
-                    sheetName: 'סייקל 7', // TODO: Make this dynamic from config too if needed? Assuming activeTab is sufficient context usually, but here we pass sheetName. Wait, the API relies on trainees[userSlug].activeTab? NO.
-                    // The API code I wrote uses `sheetName` from body.
-                    // But the `trainees.js` has `activeTab`.
-                    // Currently DayView hardcodes 'סייקל 7'. This is a BUG if distinct users have distinct tab names.
-                    // We should pass the sheetName via props or let the server decide based on activeTab.
-                    // For now, let's keep sending sheetName but we need to receive it in props if it differs.
-                    // Actually, `processSheetData` doesn't return the sheet name in the data structure.
-                    // Let's modify the API to use `traineer.activeTab`.
-                    rowIndex,
-                    field,
-                    value
-                }),
+    try {
+        const res = await fetch('/api/update', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                userSlug, // Identifies who is updating
+                sheetName: 'סייקל 7', // TODO: Make this dynamic from config too if needed? Assuming activeTab is sufficient context usually, but here we pass sheetName. Wait, the API relies on trainees[userSlug].activeTab? NO.
+                // The API code I wrote uses `sheetName` from body.
+                // But the `trainees.js` has `activeTab`.
+                // Currently DayView hardcodes 'סייקל 7'. This is a BUG if distinct users have distinct tab names.
+                // We should pass the sheetName via props or let the server decide based on activeTab.
+                // For now, let's keep sending sheetName but we need to receive it in props if it differs.
+                // Actually, `processSheetData` doesn't return the sheet name in the data structure.
+                // Let's modify the API to use `traineer.activeTab`.
+                rowIndex,
+                field,
+                value
+            }),
+        });
+        if (!res.ok) throw new Error('Failed');
+        setSavingState(prev => ({ ...prev, [key]: 'saved' }));
+        setTimeout(() => {
+            setSavingState(prev => {
+                const newState = { ...prev };
+                delete newState[key];
+                return newState;
             });
-            if (!res.ok) throw new Error('Failed');
-            setSavingState(prev => ({ ...prev, [key]: 'saved' }));
-            setTimeout(() => {
-                setSavingState(prev => {
-                    const newState = { ...prev };
-                    delete newState[key];
-                    return newState;
-                });
-            }, 2000);
-        } catch (err) {
-            console.error(err);
-            setSavingState(prev => ({ ...prev, [key]: 'error' }));
-        }
-    };
+        }, 2000);
+    } catch (err) {
+        console.error(err);
+        setSavingState(prev => ({ ...prev, [key]: 'error' }));
+    }
+};
 
-    const handleInputChange = (exIndex, field, value) => {
-        const newExercises = [...exercises];
-        newExercises[exIndex][field] = value;
-        setExercises(newExercises);
+const handleInputChange = (exIndex, field, value) => {
+    const newExercises = [...exercises];
+    newExercises[exIndex][field] = value;
+    setExercises(newExercises);
 
-        // Debounce
-        const ex = exercises[exIndex];
-        if (!ex.rowIndex) return;
-        const key = `${ex.rowIndex}-${field}`;
-        if (timeoutRefs.current[key]) clearTimeout(timeoutRefs.current[key]);
-        timeoutRefs.current[key] = setTimeout(() => {
-            updateCell(ex.rowIndex, field, value);
-        }, 1000);
-    };
+    // Debounce
+    const ex = exercises[exIndex];
+    if (!ex.rowIndex) return;
+    const key = `${ex.rowIndex}-${field}`;
+    if (timeoutRefs.current[key]) clearTimeout(timeoutRefs.current[key]);
+    timeoutRefs.current[key] = setTimeout(() => {
+        updateCell(ex.rowIndex, field, value);
+    }, 1000);
+};
 
-    const completedCount = exercises.filter(ex => ex.actualSets && ex.actualSets.trim() !== '').length;
-    const totalCount = exercises.length;
-    const progressPercent = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
-    const isDayComplete = totalCount > 0 && completedCount === totalCount;
+const completedCount = exercises.filter(ex => ex.actualSets && ex.actualSets.trim() !== '').length;
+const totalCount = exercises.length;
+const progressPercent = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
+const isDayComplete = totalCount > 0 && completedCount === totalCount;
 
-    return (
-        <div className={`day-card ${isDayComplete ? 'complete-day' : ''}`}>
-            <button className={`day-header ${isOpen ? 'open' : ''}`} onClick={onToggle}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                    <h3>{day.name}</h3>
-                    {totalCount > 0 && (
-                        <span className="mini-progress">
-                            {completedCount}/{totalCount}
-                            <div className="mini-bar-track">
-                                <div className="mini-bar-fill" style={{ width: `${progressPercent}%` }}></div>
-                            </div>
-                        </span>
-                    )}
-                </div>
-                <span className="arrow">{isOpen ? '▲' : '▼'}</span>
-            </button>
+return (
+    <div className={`day-card ${isDayComplete ? 'complete-day' : ''}`}>
+        <button className={`day-header ${isOpen ? 'open' : ''}`} onClick={onToggle}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <h3>{day.name}</h3>
+                {totalCount > 0 && (
+                    <span className="mini-progress">
+                        {completedCount}/{totalCount}
+                        <div className="mini-bar-track">
+                            <div className="mini-bar-fill" style={{ width: `${progressPercent}%` }}></div>
+                        </div>
+                    </span>
+                )}
+            </div>
+            <span className="arrow">{isOpen ? '▲' : '▼'}</span>
+        </button>
 
-            {isOpen && (
-                <div className="exercises-list">
-                    {exercises.map((ex, exIndex) => {
-                        const videoLink = extractVideoLink(ex.notes);
-                        const notesWithoutLink = ex.notes ? ex.notes.replace(videoLink, '').trim() : '';
-                        const isExerciseDone = ex.actualSets && ex.actualSets.trim() !== '';
+        {isOpen && (
+            <div className="exercises-list">
+                {exercises.map((ex, exIndex) => {
+                    const videoLink = extractVideoLink(ex.notes);
+                    const notesWithoutLink = ex.notes ? ex.notes.replace(videoLink, '').trim() : '';
+                    const isExerciseDone = ex.actualSets && ex.actualSets.trim() !== '';
 
-                        return (
-                            <div key={exIndex} className={`exercise-item ${isExerciseDone ? 'done' : ''}`}>
-                                <div className="exercise-top">
-                                    <div className="exercise-title">
-                                        {ex.type && <span className="tag-type">{ex.type}</span>}
-                                        <strong>{ex.name || '---'}</strong>
+                    return (
+                        <div key={exIndex} className={`exercise-item ${isExerciseDone ? 'done' : ''}`}>
+                            <div className="exercise-top">
+                                <div className="exercise-title">
+                                    {ex.type && <span className="tag-type">{ex.type}</span>}
+                                    <strong>{ex.name || '---'}</strong>
 
-                                        {/* History Toggle */}
-                                        {getHistory && getHistory(ex.name).length > 0 && (
-                                            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
-                                                <button
-                                                    className="history-btn"
-                                                    onClick={() => {
-                                                        const isOpen = historyOpen === exIndex;
-                                                        setHistoryOpen(isOpen ? null : exIndex);
-                                                    }}
-                                                >
-                                                    📈
-                                                </button>
-                                                {getTrend && (() => {
-                                                    const trend = getTrend(ex.name);
-                                                    if (!trend) return null;
-                                                    const color = trend.dir === 'up' ? '#22c55e' : trend.dir === 'down' ? '#ef4444' : '#888';
-                                                    const arrow = trend.dir === 'up' ? '▲' : trend.dir === 'down' ? '▼' : '➖';
-                                                    return (
-                                                        <span style={{ fontSize: '0.75rem', color, fontWeight: 'bold' }}>
-                                                            {arrow} {trend.text}
-                                                        </span>
-                                                    );
-                                                })()}
-                                            </div>
-                                        )}
-                                    </div>
-                                    {videoLink && (
-                                        <a href={videoLink} target="_blank" rel="noopener noreferrer" className="video-btn">
-                                            🎬
-                                        </a>
+                                    {/* History Toggle */}
+                                    {getHistory && getHistory(ex.name).length > 0 && (
+                                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
+                                            <button
+                                                className="history-btn"
+                                                onClick={() => {
+                                                    const isOpen = historyOpen === exIndex;
+                                                    setHistoryOpen(isOpen ? null : exIndex);
+                                                }}
+                                            >
+                                                📈
+                                            </button>
+                                            {getTrend && (() => {
+                                                const trend = getTrend(ex.name);
+                                                if (!trend) return null;
+                                                const color = trend.dir === 'up' ? '#22c55e' : trend.dir === 'down' ? '#ef4444' : '#888';
+                                                const arrow = trend.dir === 'up' ? '▲' : trend.dir === 'down' ? '▼' : '➖';
+                                                return (
+                                                    <span style={{ fontSize: '0.75rem', color, fontWeight: 'bold' }}>
+                                                        {arrow} {trend.text}
+                                                    </span>
+                                                );
+                                            })()}
+                                        </div>
                                     )}
                                 </div>
 
-                                {/* History Modal / Expansion */}
-                                {historyOpen === exIndex && (
-                                    <div className="history-panel">
-                                        <h4>היסטוריית ביצועים</h4>
-                                        <div className="history-list">
-                                            {getHistory(ex.name).map((h, i) => (
-                                                <div key={i} className="history-row">
-                                                    <span className="h-date">שבוע {h.week}</span>
-                                                    <span className="h-stats">
-                                                        {h.weight}kg x {h.reps} ({h.sets} sets)
-                                                    </span>
-                                                </div>
-                                            ))}
-                                        </div>
-                                    </div>
-                                )}
+                                {/* Video Button Logic */}
+                                {(() => {
+                                    const manualLink = videoLink;
+                                    const mappedId = getVideoId(ex.name);
 
-                                <div className="exercise-info">
-                                    <div className="plan-metric">
-                                        <span className="label">סטים</span>
-                                        <span className="value">{ex.sets}</span>
-                                    </div>
-                                    <div className="plan-metric">
-                                        <span className="label">חזרות</span>
-                                        <span className="value">{ex.reps}</span>
-                                    </div>
-                                    <div className="plan-metric">
-                                        <span className="label">משקל יעד</span>
-                                        <span className="value">{ex.weight || '-'}</span>
+                                    if (manualLink) {
+                                        return (
+                                            <a href={manualLink} target="_blank" rel="noopener noreferrer" className="video-btn">
+                                                🎬
+                                            </a>
+                                        );
+                                    }
+
+                                    if (mappedId) {
+                                        return (
+                                            <button
+                                                className="video-btn"
+                                                onClick={() => setActiveVideo(mappedId)}
+                                            >
+                                                ▶️
+                                            </button>
+                                        );
+                                    }
+
+                                    // Fallback: Link to YouTube Search
+                                    return (
+                                        <a
+                                            href={getSearchUrl(ex.name)}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="video-btn search-btn"
+                                            style={{ opacity: 0.5, filter: 'grayscale(1)' }}
+                                        >
+                                            🔍
+                                        </a>
+                                    );
+                                })()}
+                            </div>
+
+                            {/* History Modal / Expansion */}
+                            {historyOpen === exIndex && (
+                                <div className="history-panel">
+                                    <h4>היסטוריית ביצועים</h4>
+                                    <div className="history-list">
+                                        {getHistory(ex.name).map((h, i) => (
+                                            <div key={i} className="history-row">
+                                                <span className="h-date">שבוע {h.week}</span>
+                                                <span className="h-stats">
+                                                    {h.weight}kg x {h.reps} ({h.sets} sets)
+                                                </span>
+                                            </div>
+                                        ))}
                                     </div>
                                 </div>
+                            )}
 
-                                {notesWithoutLink && <div className="notes-text">{notesWithoutLink}</div>}
-
-                                {/* Inputs */}
-                                <div className="inputs-row">
-                                    {['actualSets', 'actualReps', 'actualWeight'].map((field) => {
-                                        const status = savingState[`${ex.rowIndex}-${field}`];
-                                        const labels = { actualSets: 'סטים', actualReps: 'חזרות', actualWeight: 'משקל' };
-                                        return (
-                                            <div key={field} className="input-wrapper">
-                                                <input
-                                                    type="text"
-                                                    inputMode="decimal" // Better number keyboard on iOS/Android
-                                                    pattern="[0-9]*"
-                                                    value={ex[field] || ''}
-                                                    placeholder={labels[field]}
-                                                    onChange={(e) => handleInputChange(exIndex, field, e.target.value)}
-                                                    className={status === 'saved' ? 'saved' : ''}
-                                                />
-                                                {status === 'saved' && <span className="status-dot success"></span>}
-                                                {status === 'saving' && <span className="status-dot saving"></span>}
-                                            </div>
-                                        )
-                                    })}
+                            <div className="exercise-info">
+                                <div className="plan-metric">
+                                    <span className="label">סטים</span>
+                                    <span className="value">{ex.sets}</span>
+                                </div>
+                                <div className="plan-metric">
+                                    <span className="label">חזרות</span>
+                                    <span className="value">{ex.reps}</span>
+                                </div>
+                                <div className="plan-metric">
+                                    <span className="label">משקל יעד</span>
+                                    <span className="value">{ex.weight || '-'}</span>
                                 </div>
                             </div>
-                        )
-                    })}
-                </div>
-            )}
 
-            <style jsx>{`
+                            {notesWithoutLink && <div className="notes-text">{notesWithoutLink}</div>}
+
+                            {/* Inputs */}
+                            <div className="inputs-row">
+                                {['actualSets', 'actualReps', 'actualWeight'].map((field) => {
+                                    const status = savingState[`${ex.rowIndex}-${field}`];
+                                    const labels = { actualSets: 'סטים', actualReps: 'חזרות', actualWeight: 'משקל' };
+                                    return (
+                                        <div key={field} className="input-wrapper">
+                                            <input
+                                                type="text"
+                                                inputMode="decimal" // Better number keyboard on iOS/Android
+                                                pattern="[0-9]*"
+                                                value={ex[field] || ''}
+                                                placeholder={labels[field]}
+                                                onChange={(e) => handleInputChange(exIndex, field, e.target.value)}
+                                                className={status === 'saved' ? 'saved' : ''}
+                                            />
+                                            {status === 'saved' && <span className="status-dot success"></span>}
+                                            {status === 'saving' && <span className="status-dot saving"></span>}
+                                        </div>
+                                    )
+                                })}
+                            </div>
+                        </div>
+                    )
+                })}
+            </div>
+        )}
+
+        <style jsx>{`
         .day-card {
             background: var(--bg-card);
             backdrop-filter: blur(12px);
@@ -435,6 +469,6 @@ export default function DayView({ day, weekIndex, dayIndex, isOpen, onToggle, us
         .history-row:last-child { border: none; }
         .h-stats { color: var(--accent); font-weight: 600; direction: ltr; font-family: monospace; }
       `}</style>
-        </div>
-    );
+    </div>
+);
 }
