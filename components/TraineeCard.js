@@ -19,8 +19,11 @@ export default function TraineeCard({ slug, name }) {
                     if (latestWeek) {
                         latestWeek.days.forEach(day => {
                             day.exercises.forEach(ex => {
-                                total++;
-                                if (ex.actualSets && String(ex.actualSets).trim().length > 0) completed++;
+                                // Only count exercises that have a target 'sets' value
+                                if (ex.sets && String(ex.sets).trim().length > 0) {
+                                    total++;
+                                    if (ex.actualSets && String(ex.actualSets).trim().length > 0) completed++;
+                                }
                             });
                         });
                     }

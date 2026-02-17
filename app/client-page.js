@@ -108,9 +108,12 @@ export default function ClientHome({ weeks: initialWeeks, userSlug, passcode }) 
 
         currentWeek.days.forEach(day => {
             day.exercises.forEach(ex => {
-                total++;
-                if (ex.actualSets && ex.actualSets.trim() !== '') {
-                    completed++;
+                // Only count exercises that have a target 'sets' value (ignores headers/notes)
+                if (ex.sets && String(ex.sets).trim().length > 0) {
+                    total++;
+                    if (ex.actualSets && String(ex.actualSets).trim().length > 0) {
+                        completed++;
+                    }
                 }
             });
         });
