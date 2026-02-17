@@ -9,7 +9,8 @@ import { triggerFireworks } from '../components/Confetti';
 
 export default function ClientHome({ weeks: initialWeeks, userSlug, passcode }) {
     // Reverse weeks so the latest is first (User Request)
-    const weeks = useMemo(() => [...initialWeeks].reverse(), [initialWeeks]);
+    // Reverse weeks so the latest is first, with safety check
+    const weeks = useMemo(() => Array.isArray(initialWeeks) ? [...initialWeeks].reverse() : [], [initialWeeks]);
 
 
     // Helper: Parse date range "DD.MM - DD.MM"
