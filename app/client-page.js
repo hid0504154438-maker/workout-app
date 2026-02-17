@@ -145,7 +145,7 @@ export default function ClientHome({ weeks: initialWeeks, userSlug, passcode }) 
                     <div className="dashboard-header">
                         <div className="greeting">
                             <h1>My Progress</h1>
-                            <span className="subtitle">Let&apos;s crush it! 🔥</span>
+                            <span className="subtitle">Let's crush it! 🔥</span>
 
                             <a
                                 href="https://calendar.google.com/calendar/render?action=TEMPLATE&text=אימון והשקעה בעצמי :)&details=זמן לתת עבודה!&sf=true&output=xml"

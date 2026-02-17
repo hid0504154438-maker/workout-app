@@ -12,28 +12,23 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-const outfit = Outfit({
-  subsets: ["latin"],
-  variable: "--font-outfit",
-});
-
 export const metadata = {
   title: "Workout Tracker",
   description: "Track your progress",
   manifest: "/manifest.json",
+  themeColor: "#0a0a0a",
+  // PWA & Mobile Optimization
+  viewport: {
+    width: "device-width",
+    initialScale: 1,
+    maximumScale: 1,
+    userScalable: false, // Prevents zooming on inputs
+  },
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
     title: "Workout Tracker",
   },
-};
-
-export const viewport = {
-  themeColor: "#0a0a0a",
-  width: "device-width",
-  initialScale: 1,
-  maximumScale: 1,
-  userScalable: false,
 };
 
 export default function RootLayout({ children }) {
