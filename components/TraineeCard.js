@@ -14,14 +14,16 @@ export default function TraineeCard({ slug, name }) {
                 if (data.weeks) {
                     let completed = 0;
                     let total = 0;
-                    data.weeks.forEach(week => {
-                        week.days.forEach(day => {
+                    // Get the latest week (last in the array)
+                    const latestWeek = data.weeks[data.weeks.length - 1];
+                    if (latestWeek) {
+                        latestWeek.days.forEach(day => {
                             day.exercises.forEach(ex => {
                                 total++;
                                 if (ex.actualSets && ex.actualSets.trim()) completed++;
                             });
                         });
-                    });
+                    }
                     setStats({ completed, total });
                 }
                 setLoading(false);
