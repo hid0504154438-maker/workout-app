@@ -7,9 +7,18 @@ import VideoModal from './VideoModal'; // Import Modal
 // Helper to find links in text
 const extractVideoLink = (text) => {
     if (!text) return null;
-    const urlRegex = /(https?:\/\/[^\s]+)/g;
+    // Matches http://, https://, or www.
+    const urlRegex = /((?:https?:\/\/|www\.)[^\s]+)/g;
     const match = text.match(urlRegex);
-    return match ? match[0] : null;
+    if (match) {
+        let url = match[0];
+        // Ensure protocol exists for the anchor tag to work correctly
+        if (!url.startsWith('http')) {
+            url = 'https://' + url;
+        }
+        return url;
+    }
+    return null;
 };
 
 // Fallback to YouTube Search if no ID found
