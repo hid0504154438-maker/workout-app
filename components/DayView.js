@@ -1,6 +1,8 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
+import { getVideoId } from '../lib/videoMapping'; // Import mapping logic
+import VideoModal from './VideoModal'; // Import Modal
 
 // Helper to find links in text
 const extractVideoLink = (text) => {
@@ -14,7 +16,21 @@ export default function DayView({ day, weekIndex, dayIndex, isOpen, onToggle, us
     const [exercises, setExercises] = useState(day.exercises);
     const [savingState, setSavingState] = useState({});
     const [historyOpen, setHistoryOpen] = useState(null); // Index of exercise with open history
+    const [activeVideo, setActiveVideo] = useState(null); // Video ID for modal
     const timeoutRefs = useRef({});
+
+    useEffect(() => {
+        setExercises(day.exercises);
+    }, [day.exercises]);
+
+    // ... (updateCell function remains same) ...
+    // Since we are replacing a large chunk via `replace_file_content`, 
+    // I will try to target specific blocks to minimize disruption if possible, 
+    // OR just replace the top imports and state, and insert the modal at the bottom return.
+
+    // Instead of replacing the whole file, I will modify the imports and state first.
+    // Wait, the tool only allows ONE contiguous block or MULTIPLE non-aligned.
+    // I'll update the component piece by piece.
 
     useEffect(() => {
         setExercises(day.exercises);
