@@ -1,21 +1,41 @@
 :root {
-  --background: #0a0a0a;
-  --foreground: #ededed;
-  --card-bg: #171717;
-  --accent: #00ff9d; /* Neon Green */
-  --accent-secondary: #00b8d4; /* Neon Blue */
-  --text-secondary: #a1a1aa;
-  
-  --font-family: system-ui, -apple-system, sans-serif;
+  --bg-dark: #09090b;
+  /* Deep Zinc */
+  --bg-card: rgba(24, 24, 27, 0.6);
+  /* Glassy Zinc */
+  --accent: #22d3ee;
+  /* Cyan Neon */
+  --accent-glow: rgba(34, 211, 238, 0.4);
+  --text-main: #f4f4f5;
+  --text-muted: #a1a1aa;
+  --border-color: rgba(255, 255, 255, 0.1);
+  --glass-border: 1px solid rgba(255, 255, 255, 0.08);
+  --glass-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+* {
+  box-sizing: border-box;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: var(--font-family);
+  color: var(--text-main);
+  background: radial-gradient(circle at 50% -20%, #1e1b4b, #09090b);
+  /* Subtle purple/blue tint at top */
+  background-attachment: fixed;
+  font-family: 'Outfit', sans-serif;
   margin: 0;
   padding: 0;
-  direction: rtl; /* Right to left for Hebrew */
+  -webkit-font-smoothing: antialiased;
+  direction: rtl;
+  /* Right to left for Hebrew */
+}
+
+.glass-card {
+  background: var(--bg-card);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: var(--glass-border);
+  box-shadow: var(--glass-shadow);
 }
 
 /* Utilities */
@@ -33,9 +53,16 @@ body {
   border: 1px solid #333;
 }
 
-h1, h2, h3 {
+h1,
+h2,
+h3 {
   margin: 0 0 0.5rem 0;
 }
 
-.text-accent { color: var(--accent); }
-.text-secondary { color: var(--text-secondary); }
+.text-accent {
+  color: var(--accent);
+}
+
+.text-secondary {
+  color: var(--text-secondary);
+}

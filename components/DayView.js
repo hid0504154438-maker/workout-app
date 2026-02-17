@@ -206,72 +206,77 @@ export default function DayView({ day, weekIndex, dayIndex, isOpen, onToggle, us
 
             <style jsx>{`
         .day-card {
-            background: var(--card-bg);
-            border-radius: 12px;
-            margin-bottom: 12px;
-            border: 1px solid #333;
+            background: var(--bg-card);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: var(--glass-border);
+            box-shadow: var(--glass-shadow);
+            border-radius: 16px;
+            margin-bottom: 16px;
             overflow: hidden;
-            transition: border-color 0.3s ease;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
         .day-card.complete-day {
             border-color: var(--accent);
-            box-shadow: 0 0 10px rgba(0, 255, 157, 0.1);
+            background: linear-gradient(145deg, rgba(34, 211, 238, 0.05), rgba(0, 0, 0, 0));
         }
         .day-header {
             width: 100%;
-            background: none;
+            background: transparent;
             border: none;
             color: #fff;
-            padding: 1.2rem; /* Larger touch area */
+            padding: 1.4rem;
             display: flex;
             justify-content: space-between;
             align-items: center;
             cursor: pointer;
             text-align: right;
         }
-        .day-header h3 { margin: 0; font-size: 1.2rem; }
-        .arrow { color: var(--accent); font-size: 1.2rem; }
+        .day-header h3 { margin: 0; font-size: 1.1rem; font-weight: 600; letter-spacing: 0.5px; }
+        .arrow { color: var(--text-muted); font-size: 1rem; transition: transform 0.3s; }
+        .day-header.open .arrow { transform: rotate(180deg); color: var(--accent); }
         
         .mini-progress {
-            font-size: 0.8rem;
-            color: #888;
-            background: rgba(255,255,255,0.05);
-            padding: 4px 8px;
-            border-radius: 12px;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            background: rgba(0,0,0,0.2);
+            padding: 4px 10px;
+            border-radius: 20px;
             display: flex;
             flex-direction: column;
             align-items: center;
-            min-width: 50px;
+            min-width: 55px;
+            border: 1px solid rgba(255,255,255,0.05);
         }
         .mini-bar-track {
             width: 100%;
             height: 3px;
-            background: #444;
-            margin-top: 3px;
+            background: rgba(255,255,255,0.1);
+            margin-top: 4px;
             border-radius: 2px;
+            overflow: hidden;
         }
         .mini-bar-fill {
             height: 100%;
             background: var(--accent);
             border-radius: 2px;
             transition: width 0.3s ease;
+            box-shadow: 0 0 5px var(--accent-glow);
         }
 
         .exercises-list {
-            padding: 0 1rem 1rem 1rem;
-            border-top: 1px solid #333;
+            padding: 0 1.2rem 1.2rem 1.2rem;
+            border-top: 1px solid rgba(255,255,255,0.05);
+            animation: slideDown 0.3s ease-out;
         }
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
         .exercise-item {
-            padding: 1.2rem 0; /* More spacing */
-            border-bottom: 1px solid #2a2a2a;
-            transition: background 0.3s;
-        }
-        .exercise-item.done {
-            /* Optional: subtle highlight for done exercises */
-            background: linear-gradient(to left, rgba(0, 255, 157, 0.03), transparent);
-            border-right: 2px solid var(--accent);
-            padding-right: 10px;
-            margin-right: -10px; /* Compensate padding */
+            padding: 1.4rem 0;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
         }
         .exercise-item:last-child { border-bottom: none; }
 
@@ -279,55 +284,65 @@ export default function DayView({ day, weekIndex, dayIndex, isOpen, onToggle, us
             display: flex;
             justify-content: space-between;
             align-items: flex-start;
-            margin-bottom: 12px;
+            margin-bottom: 16px;
         }
         .tag-type {
-            font-size: 0.7em;
-            background: #333;
-            padding: 3px 8px;
+            font-size: 0.65rem;
+            background: rgba(255,255,255,0.08);
+            padding: 4px 8px;
             border-radius: 6px;
-            margin-left: 8px;
-            color: var(--accent-secondary);
+            margin-left: 10px;
+            color: var(--accent);
+            font-weight: 500;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
             vertical-align: middle;
         }
         .video-btn {
-            font-size: 1.4rem;
+            font-size: 1.2rem;
             text-decoration: none;
-            background: rgba(255, 0, 0, 0.15); /* Red tint for YouTube */
-            width: 44px;
-            height: 44px;
+            background: rgba(239, 68, 68, 0.1);
+            width: 40px;
+            height: 40px;
             display: flex;
             align-items: center;
             justify-content: center;
-            border-radius: 12px; /* Rounded square instead of circle */
-            border: 1px solid rgba(255, 0, 0, 0.3);
-            color: #f00;
+            border-radius: 12px;
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            color: #ef4444;
+            transition: all 0.2s;
+        }
+        .video-btn:hover {
+            transform: scale(1.05);
+            background: rgba(239, 68, 68, 0.2);
+            box-shadow: 0 0 10px rgba(239, 68, 68, 0.2);
         }
 
         .exercise-info {
             display: flex;
-            gap: 20px;
-            margin-bottom: 15px;
-            background: #222;
-            padding: 10px;
-            border-radius: 8px;
+            gap: 24px;
+            margin-bottom: 20px;
+            background: rgba(0,0,0,0.2);
+            padding: 12px 16px;
+            border-radius: 12px;
+            border: 1px solid rgba(255,255,255,0.03);
         }
         .plan-metric {
             display: flex;
             flex-direction: column;
         }
-        .plan-metric .label { font-size: 0.7em; color: #888; margin-bottom: 2px; }
-        .plan-metric .value { font-size: 1rem; font-weight: bold; }
+        .plan-metric .label { font-size: 0.7rem; color: var(--text-muted); margin-bottom: 4px; uppercase; }
+        .plan-metric .value { font-size: 1.1rem; font-weight: 600; color: #fff; }
 
         .notes-text {
-            font-size: 0.9em;
-            color: #aaa;
-            margin-bottom: 15px;
-            background: #222;
-            padding: 10px;
-            border-radius: 6px;
+            font-size: 0.9rem;
+            color: #d1d5db;
+            margin-bottom: 20px;
+            background: rgba(34, 211, 238, 0.05);
+            padding: 12px;
+            border-radius: 8px;
             border-right: 3px solid var(--accent);
-            line-height: 1.4;
+            line-height: 1.5;
         }
 
         .inputs-row {
@@ -340,33 +355,39 @@ export default function DayView({ day, weekIndex, dayIndex, isOpen, onToggle, us
         }
         .input-wrapper input {
             width: 100%;
-            background: #111;
-            border: 1px solid #444;
+            background: rgba(0,0,0,0.3);
+            border: 1px solid rgba(255,255,255,0.1);
             color: #fff;
-            padding: 14px 5px; /* Taller input */
-            border-radius: 10px;
+            padding: 16px 5px;
+            border-radius: 12px;
             text-align: center;
-            font-size: 16px; /* Prevents iOS zoom */
+            font-size: 1.1rem;
+            font-weight: 500;
+            transition: all 0.2s;
         }
         .input-wrapper input:focus {
             outline: none;
             border-color: var(--accent);
-            background: #000;
+            background: rgba(0,0,0,0.5);
+            box-shadow: 0 0 0 2px rgba(34, 211, 238, 0.2);
         }
+        .input-wrapper input::placeholder { color: rgba(255,255,255,0.2); font-size: 0.9rem; }
         .input-wrapper input.saved {
             border-color: #22c55e;
             background: rgba(34, 197, 94, 0.1);
+            color: #22c55e;
         }
         .status-dot {
             position: absolute;
-            top: 8px;
-            left: 8px;
-            width: 8px;
-            height: 8px;
+            top: 10px;
+            left: 10px;
+            width: 6px;
+            height: 6px;
             border-radius: 50%;
+            box-shadow: 0 0 5px currentColor;
         }
-        .status-dot.success { background: #22c55e; }
-        .status-dot.saving { background: #eab308; }
+        .status-dot.success { background: #22c55e; color: #22c55e; }
+        .status-dot.saving { background: #eab308; color: #eab308; }
 
         .history-btn {
             background: none;
@@ -375,24 +396,28 @@ export default function DayView({ day, weekIndex, dayIndex, isOpen, onToggle, us
             font-size: 1.2rem;
             padding: 0;
             margin-right: 5px;
+            opacity: 0.8;
+            transition: opacity 0.2s;
         }
+        .history-btn:hover { opacity: 1; }
+        
         .history-panel {
-            background: #111;
-            padding: 10px;
-            border-radius: 8px;
-            margin-bottom: 15px;
-            border: 1px solid #444;
+            background: rgba(0,0,0,0.3);
+            padding: 12px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            border: 1px solid rgba(255,255,255,0.05);
         }
-        .history-panel h4 { margin: 0 0 10px 0; font-size: 0.9rem; color: #888; }
+        .history-panel h4 { margin: 0 0 10px 0; font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; }
         .history-row {
             display: flex;
             justify-content: space-between;
-            padding: 5px 0;
-            border-bottom: 1px solid #222;
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
             font-size: 0.9rem;
         }
         .history-row:last-child { border: none; }
-        .h-stats { color: var(--accent); font-weight: bold; direction: ltr; }
+        .h-stats { color: var(--accent); font-weight: 600; direction: ltr; font-family: monospace; }
       `}</style>
         </div>
     );
