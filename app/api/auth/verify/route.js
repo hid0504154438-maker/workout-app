@@ -17,6 +17,10 @@ export async function POST(request) {
 
         // Master Passcode or Specific User Passcode
         const MASTER_CODE = '9999';
+
+        // Artificial Delay for Security (prevention of brute force)
+        await new Promise(resolve => setTimeout(resolve, 1000));
+
         const isValid = passcode === trainee.passcode || passcode === MASTER_CODE;
 
         if (isValid) {

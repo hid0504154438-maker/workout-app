@@ -1,16 +1,20 @@
 :root {
-  --bg-dark: #09090b;
-  /* Deep Zinc */
-  --bg-card: rgba(24, 24, 27, 0.6);
-  /* Glassy Zinc */
-  --accent: #22d3ee;
+  --bg-dark: #f8fafc;
+  /* Slate 50 */
+  /* Light Background */
+  --bg-card: rgba(255, 255, 255, 0.7);
+  /* Glassy White */
+  --accent: #0ea5e9;
+  /* Sky 500 - slightly darker for contrast on white */
   /* Cyan Neon */
-  --accent-glow: rgba(34, 211, 238, 0.4);
-  --text-main: #f4f4f5;
-  --text-muted: #a1a1aa;
-  --border-color: rgba(255, 255, 255, 0.1);
-  --glass-border: 1px solid rgba(255, 255, 255, 0.08);
-  --glass-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --accent-glow: rgba(14, 165, 233, 0.3);
+  --text-main: #1e293b;
+  /* Slate 800 */
+  --text-muted: #64748b;
+  /* Slate 500 */
+  --border-color: rgba(0, 0, 0, 0.1);
+  --glass-border: 1px solid rgba(0, 0, 0, 0.05);
+  --glass-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
 }
 
 * {
@@ -19,8 +23,8 @@
 
 body {
   color: var(--text-main);
-  background: radial-gradient(circle at 50% -20%, #1e1b4b, #09090b);
-  /* Subtle purple/blue tint at top */
+  background: radial-gradient(circle at 50% -20%, #e0f2fe, #f8fafc);
+  /* Light Blue to White */
   background-attachment: fixed;
   font-family: 'Outfit', sans-serif;
   margin: 0;

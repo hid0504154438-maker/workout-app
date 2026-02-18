@@ -5,8 +5,11 @@ import WeekTabs from '../components/WeekTabs';
 import DayView from '../components/DayView';
 import ProgressBar from '../components/ProgressBar';
 import AuthGate from '../components/AuthGate';
+import WorkoutHighModal from '../components/WorkoutHighModal';
 import WeeklySummary from '../components/WeeklySummary';
+import SmartGreeting from '../components/SmartGreeting';
 import { triggerFireworks } from '../components/Confetti';
+import { useEngagement } from '../hooks/useEngagement';
 
 export default function ClientHome({ weeks: initialWeeks, userSlug }) {
     // Reverse weeks so the latest is first (User Request)
@@ -101,6 +104,8 @@ export default function ClientHome({ weeks: initialWeeks, userSlug }) {
         return { dir: 'same', text: 'ללא שינוי' };
     };
 
+    const { greeting } = useEngagement(weeks);
+
     // Calculate Weekly Progress
     const weekStats = useMemo(() => {
         if (!currentWeek) return { total: 0, completed: 0 };
@@ -137,6 +142,16 @@ export default function ClientHome({ weeks: initialWeeks, userSlug }) {
         }
     }, [weekStats, activeWeek, userSlug]);
 
+    const [showWorkoutModal, setShowWorkoutModal] = useState(false);
+    const [completedDay, setCompletedDay] = useState(null);
+
+    const handleWorkoutComplete = (day) => {
+        setCompletedDay(day);
+        setShowWorkoutModal(true);
+        // Also trigger fireworks!
+        triggerFireworks();
+    };
+
     return (
         <AuthGate userSlug={userSlug}>
             <main className="main-layout">
@@ -147,6 +162,14 @@ export default function ClientHome({ weeks: initialWeeks, userSlug }) {
                         onClose={() => setShowSummary(false)}
                     />
                 )}
+
+                {showWorkoutModal && completedDay && (
+                    <WorkoutHighModal
+                        day={completedDay}
+                        onClose={() => setShowWorkoutModal(false)}
+                    />
+                )}
+
                 <div className="side-nav">
                     <WeekTabs
                         weeks={weeks}
@@ -162,9 +185,8 @@ export default function ClientHome({ weeks: initialWeeks, userSlug }) {
                 <div className="content-area">
                     {/* Dashboard Header */}
                     <div className="dashboard-header">
-                        <div className="greeting">
-                            <h1>My Progress</h1>
-                            <span className="subtitle">Let's crush it! 🔥</span>
+                        <div className="greeting-wrapper">
+                            <SmartGreeting greeting={greeting} userSlug={userSlug} />
 
                             <a
                                 href="https://calendar.google.com/calendar/render?action=TEMPLATE&text=אימון והשקעה בעצמי :)&details=זמן לתת עבודה!&sf=true&output=xml"
@@ -172,7 +194,7 @@ export default function ClientHome({ weeks: initialWeeks, userSlug }) {
                                 rel="noopener noreferrer"
                                 className="calendar-btn"
                             >
-                                📅 שריון אימון ביומן
+                                📅 שריון אימון
                             </a>
                         </div>
 
@@ -197,6 +219,7 @@ export default function ClientHome({ weeks: initialWeeks, userSlug }) {
                                 userSlug={userSlug}
                                 getHistory={getExerciseHistory}
                                 getTrend={getTrend}
+                                onWorkoutComplete={handleWorkoutComplete}
                             />
                         ))}
 

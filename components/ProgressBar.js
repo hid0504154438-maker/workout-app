@@ -24,16 +24,16 @@ export default function ProgressBar({ total, completed, label = '', color = 'var
           justify-content: space-between;
           margin-bottom: 5px;
           font-size: 0.9rem;
-          color: #ccc;
+          color: var(--text-muted);
         }
         .progress-value {
           font-weight: bold;
-          color: #fff;
+          color: var(--text-main);
         }
         .progress-track {
           width: 100%;
           height: 10px; /* Thicker for better visibility */
-          background: #333;
+          background: rgba(0,0,0,0.1);
           border-radius: 5px;
           overflow: hidden;
         }

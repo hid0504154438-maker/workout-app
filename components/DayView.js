@@ -2,11 +2,12 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { getVideoId } from '../lib/videoMapping';
-import { extractVideoLink, getSearchUrl } from '../lib/utils';
+import { extractVideoLink } from '../lib/utils';
 import VideoModal from './VideoModal';
 import { triggerMiniConfetti } from './Confetti';
+import ExerciseInput from './ExerciseInput';
 
-export default function DayView({ day, isOpen, onToggle, userSlug, getHistory, getTrend }) {
+export default function DayView({ day, isOpen, onToggle, userSlug, getHistory, getTrend, onWorkoutComplete }) {
     const [exercises, setExercises] = useState(day.exercises);
     const [savingState, setSavingState] = useState({});
     const [historyOpen, setHistoryOpen] = useState(null);
@@ -28,7 +29,7 @@ export default function DayView({ day, isOpen, onToggle, userSlug, getHistory, g
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     userSlug,
-                    sheetName: 'סייקל 7', // Note: This should ideally be dynamic based on the trainee, but for now matches the parser output structure.
+                    sheetName: day.sheetName || 'סייקל 7', // Fallback if not provided, though parser should provide it.
                     rowIndex,
                     field,
                     value
@@ -94,8 +95,9 @@ export default function DayView({ day, isOpen, onToggle, userSlug, getHistory, g
     const progressPercent = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
     const isDayComplete = totalCount > 0 && completedCount === totalCount;
 
-    // 80% Celebration Logic
+    // 80% Celebration Logic & 100% Completion Trigger
     useEffect(() => {
+        // 80% Celebration
         if (progressPercent >= 80) {
             const key = `celebrated-80-${day.name}-${userSlug}-${new Date().toLocaleDateString()}`;
             const alreadyCelebrated = localStorage.getItem(key);
@@ -146,7 +148,24 @@ export default function DayView({ day, isOpen, onToggle, userSlug, getHistory, g
                 }, 4000);
             }
         }
-    }, [progressPercent, day.name, userSlug]);
+
+        // 100% Completion Trigger for Modal
+        if (progressPercent === 100 && onWorkoutComplete) {
+            const key = `celebrated-100-${day.name}-${userSlug}-${new Date().toLocaleDateString()}`;
+            const alreadyShown = localStorage.getItem(key);
+            if (!alreadyShown) {
+                // Trigger parent handler
+                onWorkoutComplete(day);
+                localStorage.setItem(key, 'true');
+            }
+        }
+
+    }, [progressPercent, day.name, userSlug, onWorkoutComplete]);
+
+    const cleanInstructions = (text) => {
+        if (!text) return '';
+        return text.replace(/\[Search:.*?\]/g, '').trim();
+    };
 
     return (
         <div className={`day-card ${isDayComplete ? 'complete-day' : ''}`}>
@@ -170,7 +189,7 @@ export default function DayView({ day, isOpen, onToggle, userSlug, getHistory, g
                     {exercises.map((ex, exIndex) => {
                         const videoLink = extractVideoLink(ex.notes);
                         const notesWithoutLink = ex.notes ? ex.notes.replace(videoLink, '').trim() : '';
-                        const isExerciseDone = ex.actualSets && ex.actualSets.trim() !== '';
+                        const isExerciseDone = ex.actualSets && String(ex.actualSets).trim().length > 0;
                         const isPR = prState[exIndex];
 
                         return (
@@ -211,42 +230,115 @@ export default function DayView({ day, isOpen, onToggle, userSlug, getHistory, g
                                     {(() => {
                                         const manualLink = videoLink;
                                         const mappedId = getVideoId(ex.name);
-
-                                        // Check for custom search term in notes: [Search: Front Squat]
                                         const customSearchMatch = ex.notes && ex.notes.match(/\[Search:\s*(.*?)\]/i);
                                         const searchTerm = customSearchMatch ? customSearchMatch[1] : ex.name;
 
                                         if (manualLink) {
                                             return (
                                                 <a href={manualLink} target="_blank" rel="noopener noreferrer" className="video-btn">
-                                                    🎬
+                                                    ▶
                                                 </a>
                                             );
-                                        }
-
-                                        if (mappedId) {
+                                        } else {
                                             return (
                                                 <button
                                                     className="video-btn"
-                                                    onClick={() => setActiveVideo(mappedId)}
+                                                    onClick={() => setActiveVideo(mappedId || searchTerm)}
                                                 >
-                                                    ▶️
+                                                    {mappedId ? '▶' : '🔍'}
                                                 </button>
                                             );
                                         }
-
-                                        return (
-                                            <a
-                                                href={getSearchUrl(searchTerm)}
-                                                target="_blank"
-                                                rel="noopener noreferrer"
-                                                className="video-btn search-btn"
-                                                style={{ opacity: 0.5, filter: 'grayscale(1)' }}
-                                            >
-                                                🔍
-                                            </a>
-                                        );
                                     })()}
+                                </div>
+
+                                {/* Stats Chips Row - Primary (Sets, Reps, Weight) */}
+                                <div className="stats-row-primary">
+                                    <div className="stat-chip">
+                                        <span className="chip-label">סטים</span>
+                                        <span className="chip-value">{ex.sets}</span>
+                                    </div>
+                                    <div className="stat-chip">
+                                        <span className="chip-label">חזרות</span>
+                                        <span className="chip-value">{ex.reps}</span>
+                                    </div>
+                                    <div className="stat-chip">
+                                        <span className="chip-label">משקל</span>
+                                        <span className="chip-value">{ex.weight}</span>
+                                    </div>
+                                </div>
+
+                                {/* Stats Chips Row - Secondary (Rest, RPE) */}
+                                {(ex.rest || ex.rpe) && (
+                                    <div className="stats-row-secondary">
+                                        {ex.rest && (
+                                            <div className="stat-chip secondary">
+                                                <span className="chip-label">מנוחה</span>
+                                                <span className="chip-value">{ex.rest}</span>
+                                            </div>
+                                        )}
+                                        {ex.rpe && (
+                                            <div className="stat-chip secondary">
+                                                <span className="chip-label">RPE</span>
+                                                <span className="chip-value">{ex.rpe}</span>
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
+
+                                {/* Inputs Grid - Optimistic & Touchable */}
+                                <div className="inputs-grid">
+                                    <ExerciseInput
+                                        userSlug={userSlug}
+                                        dayName={day.name}
+                                        exerciseName={ex.name}
+                                        field="actualSets"
+                                        initialValue={ex.actualSets}
+                                        label="סטים בפועל"
+                                        placeholder={ex.sets}
+                                        type="number"
+                                    />
+                                    <ExerciseInput
+                                        userSlug={userSlug}
+                                        dayName={day.name}
+                                        exerciseName={ex.name}
+                                        field="actualReps"
+                                        initialValue={ex.actualReps}
+                                        label="חזרות"
+                                        placeholder={ex.reps}
+                                        type="number"
+                                    />
+                                    <ExerciseInput
+                                        userSlug={userSlug}
+                                        dayName={day.name}
+                                        exerciseName={ex.name}
+                                        field="actualWeight"
+                                        initialValue={ex.actualWeight}
+                                        label={`משקל (${ex.weight})`}
+                                        placeholder="ק״ג"
+                                        type="number"
+                                    />
+                                </div>
+                                <div className="notes-input-section">
+                                    <ExerciseInput
+                                        userSlug={userSlug}
+                                        dayName={day.name}
+                                        exerciseName={ex.name}
+                                        field="notes"
+                                        initialValue={ex.notes}
+                                        label="הערות והארות ✏️"
+                                        placeholder="רשום הערות לאימון..."
+                                        type="text"
+                                    />
+                                </div>
+
+                                {/* Notes / Instructions Toggle */}
+                                <div className="exercise-footer">
+                                    <details className="instructions-details">
+                                        <summary>הנחיות ודגשים 💡</summary>
+                                        <p className="clean-instructions">{cleanInstructions(ex.originalInstructions)}</p>
+                                        <p className="original-notes">{notesWithoutLink}</p>
+                                    </details>
                                 </div>
 
                                 {/* History Modal / Expansion */}
@@ -265,67 +357,8 @@ export default function DayView({ day, isOpen, onToggle, userSlug, getHistory, g
                                         </div>
                                     </div>
                                 )}
-
-                                <div className="exercise-info">
-                                    <div className="plan-metric">
-                                        <span className="label">סטים</span>
-                                        <span className="value">{ex.sets}</span>
-                                    </div>
-                                    <div className="plan-metric">
-                                        <span className="label">חזרות</span>
-                                        <span className="value">{ex.reps}</span>
-                                    </div>
-                                    <div className="plan-metric">
-                                        <span className="label">משקל יעד</span>
-                                        <span className="value">{ex.weight || '-'}</span>
-                                    </div>
-                                    {ex.rest && (
-                                        <div className="plan-metric">
-                                            <span className="label">מנוחה</span>
-                                            <span className="value">{ex.rest}</span>
-                                        </div>
-                                    )}
-                                    {ex.rpe && (
-                                        <div className="plan-metric">
-                                            <span className="label">RPE</span>
-                                            <span className="value">{ex.rpe}</span>
-                                        </div>
-                                    )}
-                                </div>
-
-                                {notesWithoutLink && <div className="notes-text">{notesWithoutLink}</div>}
-
-                                {/* Inputs */}
-                                <div className="inputs-row">
-                                    {['actualSets', 'actualReps', 'actualWeight'].map((field) => {
-                                        const status = savingState[`${ex.rowIndex}-${field}`];
-                                        const labels = { actualSets: 'סטים', actualReps: 'חזרות', actualWeight: 'משקל' };
-                                        const isWeight = field === 'actualWeight';
-
-                                        return (
-                                            <div key={field} className="input-wrapper">
-                                                <input
-                                                    type="text"
-                                                    inputMode="decimal"
-                                                    pattern="[0-9]*"
-                                                    value={ex[field] || ''}
-                                                    placeholder={labels[field]}
-                                                    onChange={(e) => handleInputChange(exIndex, field, e.target.value)}
-                                                    className={status === 'saved' ? 'saved' : ''}
-                                                />
-                                                {status === 'saved' && <span className="status-dot success"></span>}
-                                                {status === 'saving' && <span className="status-dot saving"></span>}
-
-                                                {/* PR Badge */}
-                                                {isWeight && isPR && (
-                                                    <span className="pr-badge" title="New Personal Record!">🏆</span>
-                                                )}
-                                            </div>
-                                        )
-                                    })}
-                                </div>
                             </div>
-                        )
+                        );
                     })}
                 </div>
             )}
@@ -335,233 +368,210 @@ export default function DayView({ day, isOpen, onToggle, userSlug, getHistory, g
             )}
 
             <style jsx>{`
-            .day-card {
-                background: var(--bg-card);
-                backdrop-filter: blur(12px);
-                -webkit-backdrop-filter: blur(12px);
-                border: var(--glass-border);
-                box-shadow: var(--glass-shadow);
-                border-radius: 16px;
-                margin-bottom: 16px;
-                overflow: hidden;
-                transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            }
-            .day-card.complete-day {
-                border-color: var(--accent);
-                background: linear-gradient(145deg, rgba(34, 211, 238, 0.05), rgba(0, 0, 0, 0));
-            }
-            .day-header {
-                width: 100%;
-                background: transparent;
-                border: none;
-                color: #fff;
-                padding: 1.4rem;
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-                cursor: pointer;
-                text-align: right;
-            }
-            .day-header h3 { margin: 0; font-size: 1.1rem; font-weight: 600; letter-spacing: 0.5px; }
-            .arrow { color: var(--text-muted); font-size: 1rem; transition: transform 0.3s; }
-            .day-header.open .arrow { transform: rotate(180deg); color: var(--accent); }
-            
-            .mini-progress {
-                font-size: 0.75rem;
-                color: var(--text-muted);
-                background: rgba(0,0,0,0.2);
-                padding: 4px 10px;
-                border-radius: 20px;
-                display: flex;
-                flex-direction: column;
-                align-items: center;
-                min-width: 55px;
-                border: 1px solid rgba(255,255,255,0.05);
-            }
-            .mini-bar-track {
-                width: 100%;
-                height: 3px;
-                background: rgba(255,255,255,0.1);
-                margin-top: 4px;
-                border-radius: 2px;
-                overflow: hidden;
-            }
-            .mini-bar-fill {
-                height: 100%;
-                background: var(--accent);
-                border-radius: 2px;
-                transition: width 0.3s ease;
-                box-shadow: 0 0 5px var(--accent-glow);
-            }
+                .stats-row-primary {
+                    display: flex;
+                    gap: 8px;
+                    margin-bottom: 8px; /* Small gap between rows */
+                }
+                .stats-row-secondary {
+                    display: flex;
+                    gap: 8px;
+                    margin-bottom: 16px; /* Gap before inputs */
+                }
+                .stat-chip {
+                    background: rgba(0,0,0,0.03); /* Changed for light mode */
+                    border: 1px solid var(--border-color);
+                    border-radius: 8px;
+                    padding: 4px 10px;
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center;
+                    min-width: 50px;
+                    flex: 1; /* Stretch to fill width */
+                }
+                .stat-chip.secondary {
+                    background: rgba(0,0,0,0.015);
+                    border-color: rgba(0,0,0,0.03);
+                }
+                .chip-label { font-size: 0.65rem; color: var(--text-muted); }
+                .chip-value { font-size: 0.9rem; font-weight: 600; color: var(--text-main); }
 
-            .exercises-list {
-                padding: 0 1.2rem 1.2rem 1.2rem;
-                border-top: 1px solid rgba(255,255,255,0.05);
-                animation: slideDown 0.3s ease-out;
-            }
-            @keyframes slideDown {
-                from { opacity: 0; transform: translateY(-10px); }
-                to { opacity: 1; transform: translateY(0); }
-            }
+                .inputs-grid {
+                    display: grid;
+                    grid-template-columns: 1fr 1fr 1fr; /* 3 columns for Sets, Reps, Weight */
+                    gap: 12px;
+                    margin-bottom: 12px;
+                }
+                .notes-input-section {
+                    margin-top: 8px;
+                    margin-bottom: 12px;
+                }
+                
+                .exercise-footer {
+                    margin-top: 10px;
+                }
+                .instructions-details summary {
+                    color: var(--accent);
+                    font-size: 0.85rem;
+                    cursor: pointer;
+                    list-style: none; /* Hide default triangle in some browsers */
+                    margin-bottom: 5px;
+                }
+                .instructions-details[open] summary { margin-bottom: 10px; }
+                .clean-instructions {
+                    font-size: 0.9rem;
+                    line-height: 1.5;
+                    color: var(--text-muted);
+                    background: rgba(0,0,0,0.03);
+                    padding: 10px;
+                    border-radius: 8px;
+                }
 
-            .exercise-item {
-                padding: 1.4rem 0;
-                border-bottom: 1px solid rgba(255,255,255,0.05);
-            }
-            .exercise-item:last-child { border-bottom: none; }
+                .day-card {
+                    background: var(--bg-card);
+                    backdrop-filter: blur(12px);
+                    -webkit-backdrop-filter: blur(12px);
+                    border: var(--glass-border);
+                    box-shadow: var(--glass-shadow);
+                    border-radius: 16px;
+                    margin-bottom: 16px;
+                    overflow: hidden;
+                    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+                }
+                .day-card.complete-day {
+                    border-color: var(--accent);
+                    background: linear-gradient(145deg, rgba(34, 211, 238, 0.05), rgba(0, 0, 0, 0));
+                }
 
-            .exercise-top {
-                display: flex;
-                justify-content: space-between;
-                align-items: flex-start;
-                margin-bottom: 16px;
-            }
-            .tag-type {
-                font-size: 0.65rem;
-                background: rgba(255,255,255,0.08);
-                padding: 4px 8px;
-                border-radius: 6px;
-                margin-left: 10px;
-                color: var(--accent);
-                font-weight: 500;
-                letter-spacing: 0.5px;
-                text-transform: uppercase;
-                vertical-align: middle;
-            }
-            .video-btn {
-                font-size: 1.2rem;
-                text-decoration: none;
-                background: rgba(239, 68, 68, 0.1);
-                width: 40px;
-                height: 40px;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                border-radius: 12px;
-                border: 1px solid rgba(239, 68, 68, 0.2);
-                color: #ef4444;
-                transition: all 0.2s;
-            }
-            .video-btn:hover {
-                transform: scale(1.05);
-                background: rgba(239, 68, 68, 0.2);
-                box-shadow: 0 0 10px rgba(239, 68, 68, 0.2);
-            }
+                .day-header {
+                    width: 100%;
+                    background: transparent;
+                    border: none;
+                    color: var(--text-main);
+                    padding: 1.4rem;
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    cursor: pointer;
+                    text-align: right;
+                }
+                .day-header h3 { margin: 0; font-size: 1.1rem; font-weight: 600; letter-spacing: 0.5px; }
+                .arrow { color: var(--text-muted); font-size: 1rem; transition: transform 0.3s; }
+                .day-header.open .arrow { transform: rotate(180deg); color: var(--accent); }
+                
+                .mini-progress {
+                    font-size: 0.75rem;
+                    color: var(--text-muted);
+                    background: rgba(0,0,0,0.05); /* Light mode */
+                    padding: 4px 10px;
+                    border-radius: 20px;
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center;
+                    min-width: 55px;
+                    border: 1px solid var(--border-color);
+                }
+                .mini-bar-track {
+                    width: 100%;
+                    height: 3px;
+                    background: rgba(0,0,0,0.1);
+                    margin-top: 4px;
+                    border-radius: 2px;
+                    overflow: hidden;
+                }
+                .mini-bar-fill {
+                    height: 100%;
+                    background: var(--accent);
+                    border-radius: 2px;
+                    transition: width 0.3s ease;
+                    box-shadow: 0 0 5px var(--accent-glow);
+                }
 
-            .exercise-info {
-                display: flex;
-                gap: 24px;
-                margin-bottom: 20px;
-                background: rgba(0,0,0,0.2);
-                padding: 12px 16px;
-                border-radius: 12px;
-                border: 1px solid rgba(255,255,255,0.03);
-            }
-            .plan-metric {
-                display: flex;
-                flex-direction: column;
-            }
-            .plan-metric .label { font-size: 0.7rem; color: var(--text-muted); margin-bottom: 4px; uppercase; }
-            .plan-metric .value { font-size: 1.1rem; font-weight: 600; color: #fff; }
+                .exercises-list {
+                    padding: 0 1.2rem 1.2rem 1.2rem;
+                    border-top: 1px solid var(--border-color);
+                    animation: slideDown 0.3s ease-out;
+                }
+                @keyframes slideDown {
+                    from { opacity: 0; transform: translateY(-10px); }
+                    to { opacity: 1; transform: translateY(0); }
+                }
 
-            .notes-text {
-                font-size: 0.9rem;
-                color: #d1d5db;
-                margin-bottom: 20px;
-                background: rgba(34, 211, 238, 0.05);
-                padding: 12px;
-                border-radius: 8px;
-                border-right: 3px solid var(--accent);
-                line-height: 1.5;
-            }
+                .exercise-item {
+                    padding: 1.4rem 0;
+                    border-bottom: 1px solid var(--border-color);
+                }
+                .exercise-item:last-child { border-bottom: none; }
 
-            .inputs-row {
-                display: grid;
-                grid-template-columns: 1fr 1fr 1fr;
-                gap: 12px;
-            }
-            .input-wrapper {
-                position: relative;
-            }
-            .input-wrapper input {
-                width: 100%;
-                background: rgba(0,0,0,0.3);
-                border: 1px solid rgba(255,255,255,0.1);
-                color: #fff;
-                padding: 16px 5px;
-                border-radius: 12px;
-                text-align: center;
-                font-size: 1.1rem;
-                font-weight: 500;
-                transition: all 0.2s;
-            }
-            .input-wrapper input:focus {
-                outline: none;
-                border-color: var(--accent);
-                background: rgba(0,0,0,0.5);
-                box-shadow: 0 0 0 2px rgba(34, 211, 238, 0.2);
-            }
-            .input-wrapper input::placeholder { color: rgba(255,255,255,0.2); font-size: 0.9rem; }
-            .input-wrapper input.saved {
-                border-color: #22c55e;
-                background: rgba(34, 197, 94, 0.1);
-                color: #22c55e;
-            }
-            .status-dot {
-                position: absolute;
-                top: 10px;
-                left: 10px;
-                width: 6px;
-                height: 6px;
-                border-radius: 50%;
-                box-shadow: 0 0 5px currentColor;
-            }
-            .status-dot.success { background: #22c55e; color: #22c55e; }
-            .status-dot.saving { background: #eab308; color: #eab308; }
+                .exercise-top {
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: flex-start;
+                    margin-bottom: 16px;
+                }
+                .tag-type {
+                    font-size: 0.65rem;
+                    background: rgba(0,0,0,0.05);
+                    padding: 4px 8px;
+                    border-radius: 6px;
+                    margin-left: 10px;
+                    color: var(--accent);
+                    font-weight: 500;
+                    letter-spacing: 0.5px;
+                    text-transform: uppercase;
+                    vertical-align: middle;
+                }
+                .video-btn {
+                    font-size: 1.2rem;
+                    text-decoration: none;
+                    background: rgba(0,0,0,0.05);
+                    color: var(--text-main);
+                    width: 36px; height: 36px;
+                    display: flex; align-items: center; justify-content: center;
+                    border-radius: 50%;
+                    transition: transform 0.2s;
+                }
+                .video-btn:active { transform: scale(0.9); }
 
-            .history-btn {
-                background: none;
-                border: none;
-                cursor: pointer;
-                font-size: 1.2rem;
-                padding: 0;
-                margin-right: 5px;
-                opacity: 0.8;
-                transition: opacity 0.2s;
-            }
-            .history-btn:hover { opacity: 1; }
-            
-            .history-panel {
-                background: rgba(0,0,0,0.3);
-                padding: 12px;
-                border-radius: 12px;
-                margin-bottom: 20px;
-                border: 1px solid rgba(255,255,255,0.05);
-            }
-            .history-panel h4 { margin: 0 0 10px 0; font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; }
-            .history-row {
-                display: flex;
-                justify-content: space-between;
-                padding: 8px 0;
-                border-bottom: 1px solid rgba(255,255,255,0.05);
-                font-size: 0.9rem;
-            }
-            .history-row:last-child { border: none; }
-            .h-stats { color: var(--accent); font-weight: 600; direction: ltr; font-family: monospace; }
-            
-            .pr-badge {
-                position: absolute;
-                right: 10px;
-                top: 50%;
-                transform: translateY(-50%);
-                font-size: 1.2rem;
-                animation: pop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-                filter: drop-shadow(0 0 5px gold);
-            }
-            @keyframes pop {
-                from { transform: translateY(-50%) scale(0); }
-                to { transform: translateY(-50%) scale(1); }
-            }
+                .history-panel {
+                    margin-top: 16px;
+                    background: rgba(0,0,0,0.03);
+                    border-radius: 12px;
+                    padding: 16px;
+                }
+                .history-panel h4 {
+                    margin: 0 0 12px 0;
+                    font-size: 0.9rem;
+                    color: var(--text-muted);
+                }
+                .history-list {
+                    display: flex;
+                    flex-direction: column;
+                    gap: 8px;
+                }
+                .history-row {
+                    display: flex;
+                    justify-content: space-between;
+                    padding: 8px 0;
+                    border-bottom: 1px solid var(--border-color);
+                    font-size: 0.9rem;
+                }
+                .history-row:last-child { border: none; }
+                .h-stats { color: var(--accent); font-weight: 600; direction: ltr; font-family: monospace; }
+                
+                .pr-badge {
+                    position: absolute;
+                    right: 10px;
+                    top: 50%;
+                    transform: translateY(-50%);
+                    font-size: 1.2rem;
+                    animation: pop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+                    filter: drop-shadow(0 0 5px gold);
+                }
+                @keyframes pop {
+                    from { transform: translateY(-50%) scale(0); }
+                    to { transform: translateY(-50%) scale(1); }
+                }
             `}</style>
         </div>
     );

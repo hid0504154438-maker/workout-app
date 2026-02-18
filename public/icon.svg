@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <rect width="512" height="512" fill="#0a0a0a"/>
+  <!-- Gold Border -->
+  <rect x="25" y="25" width="462" height="462" rx="60" fill="none" stroke="#FFD700" stroke-width="10" opacity="0.3"/>
+  
+  <!-- Dumbbell / Weight Graphic -->
+  <path d="M136 176h240v160H136z" fill="none"/> <!-- spacer -->
+  
+  <!-- Left Weight -->
+  <rect x="110" y="156" width="40" height="200" rx="10" fill="#FFD700"/>
+  <rect x="80" y="176" width="20" height="160" rx="5" fill="#B8860B"/>
+  
+  <!-- Bar -->
+  <rect x="150" y="236" width="212" height="40" rx="5" fill="#E6E6E6"/>
+  
+  <!-- Right Weight -->
+  <rect x="362" y="156" width="40" height="200" rx="10" fill="#FFD700"/>
+  <rect x="412" y="176" width="20" height="160" rx="5" fill="#B8860B"/>
+
+  <!-- Shine -->
+  <path d="M120 166 L140 166 L140 346 L120 346 Z" fill="white" opacity="0.2"/>
+  <path d="M372 166 L392 166 L392 346 L372 346 Z" fill="white" opacity="0.2"/>
+</svg>
