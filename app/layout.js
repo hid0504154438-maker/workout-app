@@ -19,7 +19,7 @@ const outfit = Outfit({
 
 export const metadata = {
   title: "Workout Tracker",
-  description: "Track your progress",
+  description: "Track your progress v1.3",
   manifest: "/manifest.json",
   icons: {
     icon: "/icon.svg",
