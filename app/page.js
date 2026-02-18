@@ -5,7 +5,7 @@ export default function AdminDashboard() {
   return (
     <main className="container" style={{ paddingTop: '2rem' }}>
       <h1 style={{ textAlign: 'center', marginBottom: '0.5rem' }}>לוח בקרה - מאמן</h1>
-      <p style={{ textAlign: 'center', color: '#666', marginBottom: '2rem' }}>v2.0 (Live Progress)</p>
+      <p style={{ textAlign: 'center', color: '#666', marginBottom: '2rem' }}>v2.0 (Live Progress - Updated 10:55)</p>
 
       <div className="trainees-grid" style={{
         display: 'grid',
